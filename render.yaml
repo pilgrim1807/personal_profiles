@@ -2,6 +2,17 @@ services:
   - type: web
     name: fastapi-app
     env: python
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     plan: free
+    region: oregon
+
+    # В какой папке искать код
+    rootDir: backend
+
+    # Команда для установки зависимостей
+    buildCommand: pip install -r requirements.txt
+
+    # Команда для запуска сервера
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    # Health-check для Render
+    healthCheckPath: /healthz

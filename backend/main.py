@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
@@ -8,7 +8,7 @@ import os
 import json
 from oauth2client.service_account import ServiceAccountCredentials
 
-app = FastAPI()
+app = FastAPI(title="FastAPI + Google Sheets", version="1.0")
 
 # --- База данных SQLite ---
 conn = sqlite3.connect("tests.db", check_same_thread=False)
@@ -27,25 +27,28 @@ conn.commit()
 # --- Google Sheets ---
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-creds_json = os.getenv("GOOGLE_CREDENTIALS")
-
-if creds_json:
-
-    CREDS = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(creds_json), SCOPE)
-else:
-
-    CREDS = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
-
-gc = gspread.authorize(CREDS)
-
-SHEET_ID = "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA"
-
+sheet = None
 try:
-    sheet = gc.open_by_key(SHEET_ID).worksheet("Ответы")
-except gspread.exceptions.WorksheetNotFound:
-    sh = gc.open_by_key(SHEET_ID)
-    sheet = sh.add_worksheet(title="Ответы", rows="100", cols="4")
-    sheet.append_row(["Имя", "Вопрос", "Ответ", "Дата"])
+    creds_json = os.getenv("GOOGLE_CREDENTIALS")
+    if creds_json:
+        CREDS = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(creds_json), SCOPE)
+    else:
+        CREDS = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", SCOPE)
+
+    gc = gspread.authorize(CREDS)
+    SHEET_ID = "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA"
+
+    try:
+        sheet = gc.open_by_key(SHEET_ID).worksheet("Ответы")
+    except gspread.exceptions.WorksheetNotFound:
+        sh = gc.open_by_key(SHEET_ID)
+        sheet = sh.add_worksheet(title="Ответы", rows="100", cols="4")
+        sheet.append_row(["Имя", "Вопрос", "Ответ", "Дата"])
+
+    print("✅ Успешное подключение к Google Sheets")
+
+except Exception as e:
+    print(f"⚠️ Ошибка подключения к Google Sheets: {e}")
 
 
 # --- Модели данных ---
@@ -62,33 +65,46 @@ class AnswerBatch(BaseModel):
 # --- API ---
 @app.post("/submit")
 def submit_answers(data: AnswerBatch):
+    """
+    Сохраняет ответы в SQLite и Google Sheets (если доступно).
+    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     saved_answers = []
 
-    for ans in data.answers:
-        cursor.execute(
-            "INSERT INTO answers (username, question, answer, created_at) VALUES (?, ?, ?, ?)",
-            (data.username, ans.question, ans.answer, now)
-        )
+    try:
+        for ans in data.answers:
+            # Запись в SQLite
+            cursor.execute(
+                "INSERT INTO answers (username, question, answer, created_at) VALUES (?, ?, ?, ?)",
+                (data.username, ans.question, ans.answer, now)
+            )
 
-        sheet.append_row([data.username, ans.question, ans.answer, now])
+            # Запись в Google Sheets (если подключен)
+            if sheet:
+                try:
+                    sheet.append_row([data.username, ans.question, ans.answer, now])
+                except Exception as e:
+                    print(f"⚠️ Ошибка записи в Google Sheets: {e}")
 
-        saved_answers.append({
-            "username": data.username,
-            "question": ans.question,
-            "answer": ans.answer,
-            "created_at": now
-        })
+            saved_answers.append({
+                "username": data.username,
+                "question": ans.question,
+                "answer": ans.answer,
+                "created_at": now
+            })
 
-    conn.commit()
+        conn.commit()
+        return {"status": "ok", "saved": saved_answers}
 
-    return {"status": "ok", "saved": saved_answers}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка сохранения: {e}")
 
 
-# --- Получение всех результатов ---
 @app.get("/results")
 def get_results():
+    """
+    Возвращает все сохранённые результаты из SQLite.
+    """
     cursor.execute("SELECT username, question, answer, created_at FROM answers ORDER BY created_at DESC")
     rows = cursor.fetchall()
 
@@ -98,3 +114,11 @@ def get_results():
     ]
 
     return {"results": results}
+
+
+@app.get("/healthz")
+def health_check():
+    """
+    Health-check endpoint для Render.
+    """
+    return {"status": "ok"}
