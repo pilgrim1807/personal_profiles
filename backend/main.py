@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
@@ -13,6 +13,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 app = FastAPI(title="API Анкеты для 2/5 ", version="1.0")
 
+
 # --- CORS ---
 app.add_middleware(
     CORSMiddleware,
@@ -22,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- База данных SQLite ---
+# --- SQLite ---
 conn = sqlite3.connect("tests.db", check_same_thread=False)
 cursor = conn.cursor()
 cursor.execute("""
@@ -38,7 +39,6 @@ conn.commit()
 
 # --- Google Sheets ---
 SCOPE = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
 sheet = None
 try:
     creds_json = os.getenv("GOOGLE_CREDENTIALS")
@@ -57,13 +57,13 @@ try:
         sheet = sh.add_worksheet(title="Ответы", rows="100", cols="4")
         sheet.append_row(["Имя", "Вопрос", "Ответ", "Дата"])
 
-    print("✅ Успешное подключение к Google Sheets")
+    print("✅ Подключение к Google Sheets успешно")
 
 except Exception as e:
     print(f"⚠️ Ошибка подключения к Google Sheets: {e}")
 
 
-# --- Модели данных ---
+# --- Models ---
 class Answer(BaseModel):
     question: str
     answer: str
@@ -119,17 +119,17 @@ def health_check():
     return {"status": "ok"}
 
 
-# --- Раздача frontend ---
+# --- FRONTEND ---
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend")
 
-# статика
-app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
-app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
-app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
-app.mount("/fonts", StaticFiles(directory=os.path.join(FRONTEND_DIR, "fonts")), name="fonts")
-app.mount("/audio", StaticFiles(directory=os.path.join(FRONTEND_DIR, "audio")), name="audio")
+# Кеш статики
+def cached_static(directory: str, prefix: str):
+    app.mount(prefix, StaticFiles(directory=directory, html=False), name=prefix.strip("/"))
 
-# HTML-страницы
+for folder in ["assets", "css", "js", "fonts", "audio"]:
+    cached_static(os.path.join(FRONTEND_DIR, folder), f"/{folder}")
+
+# HTML страницы
 @app.get("/", include_in_schema=False)
 async def serve_index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
@@ -145,3 +145,8 @@ async def serve_profile():
 @app.get("/processing.html", include_in_schema=False)
 async def serve_processing():
     return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"))
+
+# --- SPA fallback (любые неизвестные ссылки -> index.html) ---
+@app.get("/{full_path:path}", include_in_schema=False)
+async def catch_all(full_path: str):
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))

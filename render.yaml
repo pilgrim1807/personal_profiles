@@ -5,14 +5,10 @@ services:
     plan: free
     region: oregon
 
-    # В какой папке искать код
+    # код
     rootDir: backend
 
-    # Команда для установки зависимостей
     buildCommand: pip install -r requirements.txt
-
-    # Команда для запуска сервера
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
 
-    # Health-check для Render
     healthCheckPath: /healthz
