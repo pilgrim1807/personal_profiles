@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
@@ -8,7 +11,16 @@ import os
 import json
 from oauth2client.service_account import ServiceAccountCredentials
 
-app = FastAPI(title="FastAPI + Google Sheets", version="1.0")
+app = FastAPI(title="API Анкеты для 2/5 ", version="1.0")
+
+# --- CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # можно ограничить ["https://personal-applications-2-5.onrender.com"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- База данных SQLite ---
 conn = sqlite3.connect("tests.db", check_same_thread=False)
@@ -63,74 +75,73 @@ class AnswerBatch(BaseModel):
 
 
 # --- API ---
-@app.get("/")
-def root():
-    """
-    Корневой маршрут.
-    """
-    return {
-        "message": "Добро пожаловать!",
-        "docs": "/docs",
-        "health": "/healthz"
-    }
-
-
 @app.post("/submit")
 def submit_answers(data: AnswerBatch):
-    """
-    Сохраняет ответы в SQLite и Google Sheets.
-    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     saved_answers = []
-
     try:
         for ans in data.answers:
-            # Запись в SQLite
             cursor.execute(
                 "INSERT INTO answers (username, question, answer, created_at) VALUES (?, ?, ?, ?)",
                 (data.username, ans.question, ans.answer, now)
             )
-
-            # Запись в Google Sheets 
             if sheet:
                 try:
                     sheet.append_row([data.username, ans.question, ans.answer, now])
                 except Exception as e:
                     print(f"⚠️ Ошибка записи в Google Sheets: {e}")
-
             saved_answers.append({
                 "username": data.username,
                 "question": ans.question,
                 "answer": ans.answer,
                 "created_at": now
             })
-
         conn.commit()
         return {"status": "ok", "saved": saved_answers}
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка сохранения: {e}")
 
 
 @app.get("/results")
 def get_results():
-    """
-    Возвращает все сохранённые результаты из SQLite.
-    """
     cursor.execute("SELECT username, question, answer, created_at FROM answers ORDER BY created_at DESC")
     rows = cursor.fetchall()
-
-    results = [
-        {"username": row[0], "question": row[1], "answer": row[2], "created_at": row[3]}
-        for row in rows
-    ]
-
-    return {"results": results}
+    return {
+        "results": [
+            {"username": row[0], "question": row[1], "answer": row[2], "created_at": row[3]}
+            for row in rows
+        ]
+    }
 
 
 @app.get("/healthz")
 def health_check():
-    """
-    Health-check endpoint для Render.
-    """
     return {"status": "ok"}
+
+
+# --- Раздача frontend ---
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend")
+
+# статика
+app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
+app.mount("/fonts", StaticFiles(directory=os.path.join(FRONTEND_DIR, "fonts")), name="fonts")
+app.mount("/audio", StaticFiles(directory=os.path.join(FRONTEND_DIR, "audio")), name="audio")
+
+# HTML-страницы
+@app.get("/", include_in_schema=False)
+async def serve_index():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/index.html", include_in_schema=False)
+async def serve_index_html():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+@app.get("/profile.html", include_in_schema=False)
+async def serve_profile():
+    return FileResponse(os.path.join(FRONTEND_DIR, "profile.html"))
+
+@app.get("/processing.html", include_in_schema=False)
+async def serve_processing():
+    return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"))
