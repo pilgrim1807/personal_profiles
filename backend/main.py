@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
@@ -6,9 +7,23 @@ import sqlite3
 import gspread
 import os
 import json
+import logging
 from oauth2client.service_account import ServiceAccountCredentials
 
+# --- Логирование ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(title="FastAPI + Google Sheets", version="1.0")
+
+# --- CORS (чтобы фронтенд мог подключаться к API) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # можно заменить ["https://мой-домен.ру"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- База данных SQLite ---
 conn = sqlite3.connect("tests.db", check_same_thread=False)
@@ -45,10 +60,10 @@ try:
         sheet = sh.add_worksheet(title="Ответы", rows="100", cols="4")
         sheet.append_row(["Имя", "Вопрос", "Ответ", "Дата"])
 
-    print("✅ Успешное подключение к Google Sheets")
+    logger.info("✅ Успешное подключение к Google Sheets")
 
 except Exception as e:
-    print(f"⚠️ Ошибка подключения к Google Sheets: {e}")
+    logger.warning(f"⚠️ Ошибка подключения к Google Sheets: {e}")
 
 
 # --- Модели данных ---
@@ -62,7 +77,15 @@ class AnswerBatch(BaseModel):
     answers: List[Answer]
 
 
-# --- API ---
+# --- Маршруты ---
+@app.get("/")
+def root():
+    """
+    Корневой маршрут.
+    """
+    return {"message": "Добро пожаловать в Personal Applications API!", "docs": "/docs"}
+
+
 @app.post("/submit")
 def submit_answers(data: AnswerBatch):
     """
@@ -84,7 +107,7 @@ def submit_answers(data: AnswerBatch):
                 try:
                     sheet.append_row([data.username, ans.question, ans.answer, now])
                 except Exception as e:
-                    print(f"⚠️ Ошибка записи в Google Sheets: {e}")
+                    logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
 
             saved_answers.append({
                 "username": data.username,
