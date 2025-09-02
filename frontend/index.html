@@ -12,31 +12,36 @@
     content="онлайн тест, психология, профили, личность, саморазвитие, тестирование, характер, анкета">
   <meta name="author" content="Языкова Анастасия">
   <meta name="theme-color" content="#2563eb">
-  <link rel="canonical" href="https://your-domain.com/">
 
-  <!-- Favicon -->
+  <!-- Canonical -->
+  <link rel="canonical" href="https://personal-applications-2-5.onrender.com/">
 
-  <!-- Универсальный favicon -->
+  <!-- Favicons -->
   <link rel="icon" type="image/x-icon" href="assets/favicons/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicons/favicon-16x16.png">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
-
-  <!-- Apple Touch -->
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png">
   <meta name="msapplication-TileColor" content="#2563eb">
-
-    <!-- Canonical -->
-  <link rel="canonical" href="https://personal-applications-2-5.onrender.com/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Психологические портреты участников 2/5">
   <meta property="og:description"
     content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.">
-<meta property="og:url" content="https://personal-applications-2-5.onrender.com/">
-<meta property="og:image" content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.jpg">
+  <meta property="og:url" content="https://personal-applications-2-5.onrender.com/">
+  <meta property="og:image" content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.jpg">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Персональные анкеты">
+  <meta name="twitter:description" content="Пройди онлайн-тест и выбери свой профиль.">
+  <meta name="twitter:image" content="https://your-domain.com/social-preview.jpg">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ПсихоТест">
 
 
   <!-- Schema.org -->
@@ -50,7 +55,7 @@
         "@type": "Person",
         "name": "Анастасия Языкова"
       },
-      "datePublished": "2025-08-17",
+      "datePublished": "2025-09-02",
       "url": "https://personal-applications-2-5.onrender.com/"
     }
   </script>
@@ -58,32 +63,28 @@
   <!-- Preload Fonts -->
   <link rel="preload" href="fonts/PermanentMarker.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="preload" href="fonts/PermanentMarker.woff" as="font" type="font/woff" crossorigin="anonymous">
-
   <link rel="preload" href="fonts/Pacifico-Pro.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="preload" href="fonts/Pacifico-Pro.woff" as="font" type="font/woff" crossorigin="anonymous">
-
   <link rel="preload" href="fonts/Manrope.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="preload" href="fonts/Manrope.woff" as="font" type="font/woff" crossorigin="anonymous">
-
   <link rel="preload" href="fonts/Manrope-Semibold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="preload" href="fonts/Manrope-Semibold.woff" as="font" type="font/woff" crossorigin="anonymous">
-
   <link rel="preload" href="fonts/Caveat-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
   <link rel="preload" href="fonts/Caveat-Bold.woff" as="font" type="font/woff" crossorigin="anonymous">
 
+  <!-- Preload фотографий (WebP) -->
+  <link rel="preload" as="image" href="assets/names/sergey.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/andrey.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/sonya.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/valera.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/vovaha.webp" fetchpriority="high">
 
-  <!-- Preload фотографий -->
-<link rel="preload" as="image" href="assets/names/sergey.jpg" fetchpriority="high">
-<link rel="preload" as="image" href="assets/names/andrey.jpg" fetchpriority="high">
-<link rel="preload" as="image" href="assets/names/sonya.jpg" fetchpriority="high">
-<link rel="preload" as="image" href="assets/names/valera.jpg" fetchpriority="high">
-<link rel="preload" as="image" href="assets/names/vovaha.jpg" fetchpriority="high">
+  <link rel="preload" as="audio" href="audio/projector_on.mp3">
 
-  <!-- Подключение manifest -->
+  <!-- Manifest -->
   <link rel="manifest" href="manifest-index.json">
-  <meta name="theme-color" content="#000000">
 
-  <!-- Стили -->
+  <!-- CSS -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/fonts.css">
 </head>
@@ -101,18 +102,9 @@
     </header>
 
     <div class="profiles-wrapper">
-      <section class="profiles-list" id="profiles-list" aria-label="Список профилей">
-<section class="profiles-list" id="profiles-list">
-  <button class="profiles-list__item profile-card--avatar sergey"></button>
-  <button class="profiles-list__item profile-card--avatar andrey"></button>
-  <button class="profiles-list__item profile-card--avatar sonya"></button>
-  <button class="profiles-list__item profile-card--avatar valera"></button>
-  <button class="profiles-list__item profile-card--avatar vovaha"></button>
-</section>
-
-      </section>
+      <!-- Динамическая вставка карточек -->
+      <section class="profiles-list" id="profiles-list" aria-label="Список профилей"></section>
     </div>
-
   </main>
 
   <footer class="footer">
@@ -132,7 +124,6 @@
       <button id="sound-continue">Продолжить</button>
     </div>
   </div>
-
 </body>
 
 </html>

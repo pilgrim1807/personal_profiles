@@ -1,11 +1,11 @@
 {
-  "id": "psychotest.index",
+  "id": "/index",
   "name": "Психологический онлайн-тест — Выбор профиля",
   "short_name": "ПсихоТест",
   "description": "Пройди онлайн-тест и выбери свой профиль.",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
@@ -21,10 +21,37 @@
       "purpose": "any maskable"
     },
     {
+      "src": "assets/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Выбор профиля",
+      "short_name": "Профили",
+      "url": "/index.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Результаты теста",
+      "short_name": "Результаты",
+      "url": "/processing.html",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
 }

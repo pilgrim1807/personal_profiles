@@ -42,7 +42,7 @@ function triggerFlashWithSound() {
   setTimeout(() => flash.remove(), 1700);
 }
 
-//мета-тэги
+// динамические мета-теги
 function setDynamicMeta(profile) {
   if (profile.title) document.title = profile.title;
   if (profile.favicon) {
@@ -348,7 +348,6 @@ window.onload = function () {
   const hasProgress = localStorage.getItem(`progress_${name}`) !== null;
 
   if (!hasProgress && idx === 0) {
-
     showModal("flash-sound-modal");
     const flashBtn = document.getElementById("flash-sound-btn");
     flashBtn.textContent = "Начать просмотр";
@@ -357,7 +356,6 @@ window.onload = function () {
       startProfileTest(profile, 0, answers, loader);
     });
   } else {
-
     showModal("intro-modal");
     const introBtn = document.getElementById("intro-btn");
     introBtn.textContent = "Продолжить просмотр";

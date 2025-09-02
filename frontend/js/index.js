@@ -1,10 +1,10 @@
-// Данные профилей
+// Данные профилей с webp + jpg
 const PROFILES = [
-  { name: "Сергей", photo: "assets/names/sergey.jpg", className: "sergey" },
-  { name: "Андрей", photo: "assets/names/andrey.jpg", className: "andrey" },
-  { name: "Соня",   photo: "assets/names/sonya.jpg",  className: "sonya" },
-  { name: "Валера", photo: "assets/names/valera.jpg", className: "valera" },
-  { name: "Воваха", photo: "assets/names/vovaha.jpg", className: "vovaha" }
+  { name: "Сергей", jpg: "assets/names/sergey.jpg", webp: "assets/names/sergey.webp", className: "sergey" },
+  { name: "Андрей", jpg: "assets/names/andrey.jpg", webp: "assets/names/andrey.webp", className: "andrey" },
+  { name: "Соня",   jpg: "assets/names/sonya.jpg",  webp: "assets/names/sonya.webp",  className: "sonya" },
+  { name: "Валера", jpg: "assets/names/valera.jpg", webp: "assets/names/valera.webp", className: "valera" },
+  { name: "Воваха", jpg: "assets/names/vovaha.jpg", webp: "assets/names/vovaha.webp", className: "vovaha" }
 ];
 
 // Рендеринг карточек
@@ -17,11 +17,13 @@ function renderProfiles() {
             type="button" 
             aria-label="Выбрать профиль ${profile.name}">
       <div class="polaroid">
-        <img class="profile-card__photo"
-             src="${profile.photo}"
-             alt="${profile.name}"
-             loading="eager"
-             fetchpriority="high">
+        <picture>
+          <source srcset="${profile.webp}" type="image/webp">
+          <img class="profile-card__photo"
+               src="${profile.jpg}"
+               alt="${profile.name}"
+               loading="lazy">
+        </picture>
         <div class="profile-card__caption">${profile.name}</div>
       </div>
     </button>
@@ -30,7 +32,7 @@ function renderProfiles() {
   initSoundWarning();
 }
 
-// Модальное окно, связанное со звуком
+// Модальное окно (звук)
 function initSoundWarning() {
   const warning = document.getElementById("sound-warning");
   const continueBtn = document.getElementById("sound-continue");
