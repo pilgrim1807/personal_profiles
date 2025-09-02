@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+backend/venv/
+backend/tests.db
+backend/credentials.json
+*.log
+.DS_Store
+Thumbs.db
+.~lock.*
+node_modules/
+dist/
+build/

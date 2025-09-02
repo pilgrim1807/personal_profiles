@@ -1,0 +1,303 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+main,
+footer {
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.main-wrapper {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 40px 60px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: fadeInScale 0.9s ease forwards;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.main__title {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.main__subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.home-link {
+  display: inline-block;
+  padding: 12px 28px;
+  background: #fff;
+  color: #2563eb;
+  font-weight: bold;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.home-link:hover {
+  background: #f1f1f1;
+  transform: translateY(-3px);
+}
+
+.home-link:active {
+  transform: translateY(0);
+}
+
+.footer {
+  position: absolute;
+  bottom: 12px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  max-width: 90%;
+  z-index: 2;
+}
+
+.bubbles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -150px;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  animation: floatUp linear forwards;
+  background: radial-gradient(circle at 30% 30%, hsla(var(--hue), 90%, 85%, 0.9), hsla(var(--hue), 90%, 50%, 0.1) 70%),
+    radial-gradient(circle at 70% 70%, hsla(var(--hue), 90%, 75%, 0.4), transparent 80%);
+  box-shadow: inset -6px -10px 20px rgba(255, 255, 255, 0.4),
+    inset 8px 10px 18px rgba(0, 0, 0, 0.15);
+  opacity: 0.6;
+  backdrop-filter: blur(2px);
+}
+
+@keyframes floatUp {
+  to {
+    transform: translateY(-120vh);
+    opacity: 0;
+  }
+}
+
+.bubble.pop {
+  animation: popAnim 0.35s ease forwards;
+}
+
+@keyframes popAnim {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+
+  100% {
+    transform: scale(0.3);
+    opacity: 0;
+    filter: blur(6px);
+  }
+}
+
+.splash {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  background: hsla(var(--hue), 100%, 90%, 0.4);
+  box-shadow: 0 0 6px hsla(var(--hue), 100%, 60%, 0.3);
+  animation: splashAnim 0.8s ease-out forwards;
+}
+
+@keyframes splashAnim {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.6);
+    opacity: 0;
+  }
+}
+
+.bubble-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+/* Стеклянный пузырь */
+.bubble-message {
+  position: relative;
+  border-radius: 50%;
+  width: 300px;
+  height: 300px;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, hsla(200, 90%, 85%, 0.9), hsla(200, 90%, 50%, 0.15) 70%),
+    radial-gradient(circle at 70% 70%, hsla(200, 90%, 75%, 0.35), transparent 80%);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5),
+    inset 8px 10px 18px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(170, 130, 255, 0.5);
+
+  animation: bubblePulse 5s ease-in-out infinite,
+             floaty 6s ease-in-out infinite,
+             rainbowBorder 8s linear infinite;
+}
+
+/* Радужная анимация границы */
+@keyframes rainbowBorder {
+  0%   { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(0,100%,70%,0.4); }
+  25%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(200,100%,70%,0.5); }
+  50%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(300,100%,70%,0.5); }
+  75%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(120,100%,70%,0.5); }
+  100% { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(0,100%,70%,0.4); }
+}
+
+/* Блики */
+.bubble-message::before {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: 25%;
+  width: 120px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+  border-radius: 50%;
+  transform: rotate(-20deg);
+  opacity: 0.6;
+}
+
+.bubble-message::after {
+  content: "";
+  position: absolute;
+  bottom: 20%;
+  right: 20%;
+  width: 80px;
+  height: 40px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
+  border-radius: 50%;
+  opacity: 0.4;
+}
+
+/*  Анимации пузыря */
+@keyframes bubblePulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.08); }
+}
+@keyframes floaty {
+  0%   { transform: translate(0,0) scale(1); }
+  25%  { transform: translate(-8px,-10px) scale(1.05); }
+  50%  { transform: translate(0,0) scale(1.12); }
+  75%  { transform: translate(8px,10px) scale(1.05); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+/* Лопание модального пузыря*/
+.bubble-message.pop { animation: popAnim 0.5s ease forwards; }
+@keyframes popAnim {
+  0%   { transform: scale(1); opacity: 1; filter: blur(0); }
+  50%  { transform: scale(1.2); opacity: 0.8; filter: blur(2px); }
+  100% { transform: scale(0.3); opacity: 0; filter: blur(6px); }
+}
+
+/* SVG-текст */
+.bubble-text {
+  width: 100%;
+  height: 100%;
+}
+
+text {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.gradient-text,
+.emoji {
+  fill: url(#grad);
+  animation: textDepthSync 6s ease-in-out infinite,
+             flicker 4s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.emoji {
+  fill: #fff;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.9));
+}
+
+@keyframes textDepthSync {
+  0%, 100% {
+    transform: scale(0.95);
+    filter: brightness(1.5) contrast(0.8);
+    opacity: 0.7;
+  }
+  25% {
+    transform: scale(1.08);
+    filter: brightness(1.2) contrast(1.0);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15);
+    filter: brightness(0.9) contrast(1.4);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1.08);
+    filter: brightness(1.2) contrast(1.0);
+    opacity: 0.85;
+  }
+}
+
+/* Мягкое мерцание текста */
+@keyframes flicker {
+  0%, 100% { text-shadow: 0 0 3px rgba(200, 200, 255, 0.25); }
+  50%      { text-shadow: 0 0 9px rgba(230, 214, 252, 0.4); }
+}

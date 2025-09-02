@@ -1,0 +1,881 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  background: #000000;
+}
+
+.page-loader {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+}
+
+/*  Скрытие элементов  */
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+
+body.profile-page {
+  background: #000000;
+  min-height: 100vh;
+}
+
+.profile-survey {
+  max-width: 420px;
+  margin: 40px auto;
+  background: #fffdf8;
+  box-shadow: 0 4px 36px #bebca466;
+  border-radius: 18px;
+  padding: 40px 36px 30px;
+}
+
+.profile-polaroid {
+  background: #fff;
+  border: 2px solid #eee7d4;
+  box-shadow: 0 2px 12px #aead9948;
+  padding: 9px 9px 29px;
+  margin-bottom: 18px;
+  width: 160px;
+}
+
+.profile-polaroid__photo {
+  width: 136px;
+  height: 136px;
+  object-fit: cover;
+}
+
+.profile-polaroid__caption {
+  font-family: 'Caveat', 'Permanent Marker', cursive;
+  font-size: 1.27rem;
+  color: #253;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.profile-survey__progress {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.profile-survey__tip {
+  color: #bab893;
+  margin-bottom: 18px;
+}
+
+.profile-survey__question {
+  font-size: 1.13rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.profile-survey__answers {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.profile-survey__radio {
+  background: #f3f6fa;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.profile-survey__radio--custom input[type="text"] {
+  margin-left: 8px;
+  border: none;
+  border-bottom: 2px solid #c4cbd8;
+  background: transparent;
+}
+
+.profile-survey__next {
+  background: #8ebfad;
+  color: #fff;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 9px;
+  padding: 11px 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px #90b2a626;
+}
+
+.profile__decor {
+  margin-top: 24px;
+  text-align: center;
+}
+
+body.profile-page {
+  background: #141414;
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+}
+
+/* Вся карточка */
+.profile-question {
+  width: 100%;
+  max-width: 650px;
+  min-width: 320px;
+  min-height: 800px;
+  margin: 60px auto 30px;
+  padding: 0;
+  border-radius: 20px;
+  box-shadow: 0 6px 56px #bebca466, 0 2px 14px #d6d7d966;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+
+.profile-question * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Фото */
+.profile-question__img-bg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Затемнение */
+.profile-question__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(30, 32, 44, .33) 60%, rgba(255, 255, 255, 0.07) 100%);
+  backdrop-filter: blur(3px) brightness(0.91);
+  z-index: 1;
+}
+
+/* Контент */
+.profile-question__content {
+  display: flex;
+  padding: 0 2.3vw;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  z-index: 2;
+}
+
+
+/* Прогресс */
+.profile-question__progress {
+  width: 460px;
+  height: 30px;
+  border-radius: 12px;
+  background: #ffffffd5;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(180deg, #7acfa6 0%, #8ebfad 100%);
+  border-radius: 12px 0 0 12px;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.bubbles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -20px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: rise linear forwards;
+}
+
+@keyframes rise {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  25%  { transform: translate(-10px, -20px) scale(1.1); opacity: 1; }
+  50%  { transform: translate(10px, -40px) scale(0.9); opacity: 0.9; }
+  75%  { transform: translate(-5px, -60px) scale(1.05); opacity: 0.7; }
+  100% { transform: translate(5px, -80px) scale(0.5); opacity: 0; }
+}
+
+
+.profile-question__progress-label {
+  color: #013d1e;
+  font-size: 1.1rem;
+  font-family: 'Caveat-Bold', sans-serif;
+  font-weight: 500;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.projector-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.6) 40%, rgba(0,0,0,0.8) 100%);
+  z-index: 9999;
+  opacity: 1;
+  animation: projectorOn 1.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes projectorOn {
+  0%   { opacity: 1; filter: blur(6px) brightness(2); }
+  40%  { opacity: 1; filter: blur(3px) brightness(1.6); }
+  70%  { opacity: 0.7; filter: blur(2px) brightness(1.2); }
+  100% { opacity: 0; filter: blur(0px) brightness(1); }
+}
+
+
+/* Вопрос */
+.profile-question__question {
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+  color: #fff;
+  text-shadow: 0 2px 7px #111a, 0 1px 0 #fff3;
+  text-align: center;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.profile-question__question,
+.profile-question__answers {
+  flex-shrink: 0;
+}
+
+.profile-question__answers {
+  display: flex;
+  flex-direction: column;
+  flex: 0.9;
+}
+
+/* "Да" и "Нет" */
+.profile-question__answers-row {
+  display: flex;
+  gap: 36px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Стили радио кнопок */
+.profile-question__radio {
+  font-size: 1.13rem;
+  cursor: pointer;
+    max-width: 180px;
+  padding: 13px 50px;
+  border-radius: 12px;
+  background: rgba(250, 248, 253, 0.61);
+  box-shadow: 0 2px 12px #cad4e420;
+  color: #22342b;
+  border: 1.5px solid transparent;
+  opacity: 0.8;
+  font-weight: 600;
+  display: flex;
+  flex: 1 1 1;
+  justify-content: center;
+  text-align: center;
+  transition: background .17s, box-shadow .13s, border-color .13s, color .13s;
+  position: relative;
+
+}
+
+.profile-question__radio input[type="radio"] {
+  all: unset;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  background-color: white;
+  accent-color: #7acfa6;
+  margin-right: 15px;
+  display: inline-block;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.profile-question__radio input[type="radio"]:checked {
+  background-color: #7acfa6;
+  border-color: #7acfa6;
+}
+
+.profile-question__radio:has(input:checked) {
+  background: rgba(216, 237, 227, 0.97);
+  border: 1.5px solid #8ebfad;
+  color: #204d32;
+  opacity: 1;
+  box-shadow: 0 2px 18px #90b2a632;
+}
+
+.profile-question__radio:hover,
+.profile-question__radio:focus-within {
+  background: rgba(216, 237, 227, 0.77);
+  border: 1.5px solid #8ebfad;
+  color: #1c332b;
+  opacity: 1;
+}
+
+/*  Да/Нет */
+.profile-question__custom-block {
+  width: 100%;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-question__custom {
+  border: none;
+  border-bottom: 2px solid #c4cbd862;
+  background: #f8f9fa52;
+  border-radius: 6px 6px 0 0;
+  font-size: 1.15rem;
+  padding: 8px 18px;
+  color: #ffffff;
+  width: 340px;
+  outline: none;
+  opacity: 0.94;
+  box-shadow: 0 1px 6px #cad4e419;
+}
+
+.profile-question__custom:focus {
+  border-color: #8ebfad;
+  background: #fffefac7;
+  color: #254;
+  opacity: 1;
+}
+
+.profile-question__controls {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 160px;
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+
+/* Кнопки */
+.profile-question__next,
+.profile-question__prev,
+.profile-question__submit {
+  border: none;
+  border-radius: 11px;
+  font-size: 1.14rem;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 13px 48px;
+  cursor: pointer;
+  margin-right: 18px;
+  transition: background .17s, color .13s;
+  box-shadow: 0 3px 16px #90b2a626;
+}
+
+.profile-question__next {
+  background: #8ebfad;
+  color: #fff;
+}
+
+.profile-question__prev {
+  background: #e5e8e8;
+  color: #424747;
+  margin-right: 0;
+}
+
+.profile-question__next:disabled {
+  opacity: 0.54;
+  background: #b6cfc8;
+  cursor: not-allowed;
+}
+
+.profile-question__submit {
+  background: #8ebfad;
+  color: #fff;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 9px;
+  padding: 16px 66px;
+  cursor: pointer;
+  box-shadow: 0 2px 12px #90b2a626;
+  margin: 0 auto;
+  display: block;
+}
+
+.profile-question__submit:disabled {
+  background: #bbcfc9;
+  cursor: not-allowed;
+}
+
+
+.profile-footer {
+  margin: 70px auto 30px;
+  color: #a5a5a5a4;
+  text-align: center;
+  max-width: 650px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  color: #a5a5a5a4;
+}
+
+
+
+@media (max-width: 900px) {
+  .profile-question {
+    max-width: 95vw;
+  }
+
+  .profile-question__content {
+    padding: 7vw 3vw 5vw 3vw;
+  }
+
+  .profile-question__custom {
+    width: 80vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-question {
+    min-height: 74vw;
+  }
+
+  .profile-question__img-bg {
+    min-height: 320px;
+  }
+
+  .profile-question__answers-row {
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .profile-question__content {
+    padding: 7vw 2vw 6vw 2vw;
+  }
+
+  .profile-question__custom {
+    width: 98vw;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* Медиазапросы */
+@media (max-width: 1024px) {
+  .profile-question {
+    max-width: 80vw;
+    margin: 4vh auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-question {
+    max-width: 82vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-question {
+    max-width: 85vw;
+    border-radius: 16px;
+    margin: 4vh auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-question {
+    min-height: 670px;
+  }
+
+  .profile-question__img-bg {
+    min-height: 320px;
+  }
+
+  /* ответы  */
+  .profile-question__answers-row {
+    gap: 12px;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .profile-question__radio {
+    padding: 10px 22px;
+    font-size: 1rem;
+    max-width: 140px;
+  }
+
+  .profile-question__content {
+    padding: 7vw 2vw 6vw 2vw;
+  }
+
+  .profile-question__custom {
+    width: 94vw;
+  }
+
+  /* кнопки "Следующий / Предыдущий"  */
+  .profile-question__controls {
+    gap: 70px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .profile-question__next,
+  .profile-question__prev {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+    min-width: 150px;
+    max-width: 80%;
+    min-height: 50px;
+    max-height: 80%; 
+    margin: 0;
+  }
+
+  /* Кнопка "Отправить */
+  .profile-question__submit {
+    padding: 12px 30px;
+    font-size: 1rem;
+    max-width: 70%;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-question {
+    width: 80vw;
+    margin: 2vh auto;
+    border-radius: 12px;
+    min-height: 580px;
+  }
+
+  .profile-question__img-bg {
+    min-height: 260px;
+  }
+
+  /* прогресс-бар */
+  .profile-question__progress {
+    width: 300px;
+    max-width: 340px;
+    height: 42px;
+    border-radius: 18px;
+    margin: 0 auto 16px auto;
+  }
+
+  .progress-fill {
+    border-radius: 16px 0 0 16px;
+  }
+
+  .profile-question__progress-label {
+    font-size: 1rem;
+  }
+
+  /* Ответы Да / Нет  */
+  .profile-question__answers-row {
+    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .profile-question__radio {
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    max-width: 120px;
+  }
+
+  /* Поле ввода */
+  .profile-question__custom {
+    width: 85vw;
+    font-size: 1rem;
+  }
+
+  /* Кнопки управления */
+  .profile-question__controls {
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .profile-question__next,
+  .profile-question__prev {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    min-width: 100px;
+    max-width: 45%;
+    flex: 1 1 auto;
+    margin: 0;
+  }
+
+  .profile-question__submit {
+    padding: 10px 22px;
+    font-size: 0.95rem;
+    max-width: 80%;
+  }
+}
+
+/* темный экран  */
+.flash-sound-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 8, 20, 0.97);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  backdrop-filter: blur(6px);
+}
+
+/* Круг света */
+.projector-light {
+  position: relative;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    rgba(245,235,255,0.95) 0%,
+    rgba(160,110,200,0.65) 45%,
+    rgba(20,15,30,0.95) 100%);
+  box-shadow: 0 0 300px 160px rgba(140,100,200,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: lampFlicker 3s infinite alternate;
+  overflow: hidden;
+  padding: 2rem;
+  border: 4px double rgba(200,150,100,0.6);
+}
+
+/* Пыль */
+.dust {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(230,210,255,0.2) 0.5px, transparent 0.5px),
+    radial-gradient(circle, rgba(190,150,230,0.15) 0.8px, transparent 0.8px),
+    radial-gradient(circle, rgba(255,255,255,0.1) 0.7px, transparent 0.7px);
+  background-size: 5px 5px, 7px 7px, 9px 9px;
+  animation: dustChaos 70s linear infinite;
+  opacity: 0.15;
+}
+
+@keyframes dustChaos {
+  0% { transform: translate(0,0) rotate(0); }
+  25% { transform: translate(-12px,8px) rotate(90deg); }
+  50% { transform: translate(15px,-12px) rotate(180deg); }
+  75% { transform: translate(-8px,20px) rotate(270deg); }
+  100% { transform: translate(0,0) rotate(360deg); }
+}
+
+/* Контент */
+.projector-content {
+  text-align: center;
+  font-family: 'Oranienbaum', monospace;
+  color: #481681;
+  text-shadow: 0 0 10px rgba(244, 233, 255, 0.8),
+               0 0 22px rgba(248, 248, 249, 0.6);
+}
+
+/* Текст в модальном окне */
+.projector-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  font-family: 'Oranienbaum', monospace;
+  color: #320a69;
+  opacity: 0.95;
+  text-shadow: 0 0 6px rgba(221, 189, 249, 0.901),
+               0 0 18px rgba(87, 15, 255, 0.717);
+}
+
+/* Кнопка */
+.old-button {
+  display: inline-block;
+  padding: 1rem 3.2rem;
+  font-size: 1.3rem;
+  font-family: 'Oranienbaum', serif;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 50px;
+  border: 3px double rgba(210,160,100,0.9);
+  background: linear-gradient(145deg, #361a4a, #140820);
+  color: #ffcc7a;
+  box-shadow:
+    0 6px 18px rgba(30,10,60,0.85),
+    inset 0 2px 6px rgba(255,220,160,0.2);
+  transition: all 0.35s ease;
+}
+
+.old-button:hover {
+  background: linear-gradient(145deg, #52276e, #1f0f38);
+  color: #ffd98f;
+  transform: translateY(-3px) scale(1.04);
+  box-shadow:
+    0 0 24px rgba(200,160,255,0.8),
+    0 0 40px rgba(120,70,180,0.6);
+}
+
+.old-button:active {
+  background: linear-gradient(145deg, #1e0d2a, #0a0412);
+  color: #f5b65a;
+  transform: translateY(3px) scale(0.95);
+  box-shadow:
+    inset 0 5px 10px rgba(0,0,0,0.9);
+}
+
+
+/* Анимация света */
+@keyframes lampFlicker {
+  0%, 100% { opacity: 0.96; }
+  40% { opacity: 0.9; }
+  65% { opacity: 0.83; }
+  80% { opacity: 0.92; }
+}
+
+@media (max-width: 850px) {
+  .projector-light {
+    width: min(90vw, 460px);
+    height: min(90vw, 460px);
+  }
+}
+
+@media (max-width: 600px) {
+  .projector-light {
+    width: min(95vw, 360px);
+    height: min(95vw, 360px);
+    padding: 1rem;
+  }
+
+  .projector-content p {
+    font-size: clamp(0.8rem, 4vw, 1rem);
+    margin-bottom: 1rem;
+  }
+
+  .old-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .projector-light {
+    width: min(90vw, 220px);
+    height: min(90vw, 220px);
+  }
+  .projector-content p {
+    font-size: clamp(0.55rem, 3.2vw, 0.85rem);
+    margin-bottom: 0.8rem;
+  }
+  .old-button {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.7rem;
+    border-width: 2px;
+  }
+}
+
+@media (max-width: 300px) {
+  .projector-light {
+    width: min(85vw, 170px);
+    height: min(85vw, 170px);
+    padding: 0.6rem;
+    box-sizing: border-box;
+  }
+
+  .projector-content {
+    max-width: 85%;
+  }
+
+  .projector-content h2 {
+    font-size: 0.75rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .projector-content p {
+    font-size: clamp(0.45rem, 2.5vw, 0.6rem);
+    line-height: 1.15;
+    margin-bottom: 0.3rem;
+    word-wrap: break-word;
+  }
+
+  .old-button {
+    padding: 0.2rem 0.4rem;
+    font-size: clamp(0.4rem, 2vw, 0.55rem);
+    border-width: 1.5px;
+    max-width: 75%;            
+    white-space: normal;       
+    word-wrap: break-word;     
+    text-align: center;
+    line-height: 1.1;
+  }
+}
+
+@media (max-width: 200px) {
+  .projector-light {
+    width: 130px;
+    height: 130px;
+    padding: 0.4rem;
+  }
+
+  .projector-content {
+    max-width: 80%;
+  }
+
+  .projector-content h2 {
+    font-size: 0.6rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .projector-content p {
+    font-size: 0.rem;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+    word-wrap: break-word;
+  }
+
+  .old-button {
+    padding: 0.35rem 0.3rem;
+    font-size: 0.25rem;
+    border-width: 1px;
+    max-width: 70%;
+    white-space: normal;
+    word-wrap: break-word;
+    text-align: center;
+    line-height: 1.05;
+  }
+}
+
