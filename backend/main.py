@@ -182,6 +182,15 @@ for folder in ["assets", "css", "js", "fonts", "audio"]:
 async def serve_index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
+@app.get("/profile.html", include_in_schema=False)
+async def serve_profile():
+    return FileResponse(os.path.join(FRONTEND_DIR, "profile.html"))
+
+@app.get("/processing.html", include_in_schema=False)
+async def serve_processing():
+    return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"))
+
 @app.get("/{full_path:path}", include_in_schema=False)
 async def catch_all(full_path: str):
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
