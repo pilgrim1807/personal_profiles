@@ -254,22 +254,23 @@ function addQuestionListeners(profile, idx, answers) {
 async function submitResults(profile, answers) {
   const formData = new FormData();
 
-  const answersJSON = JSON.stringify(
+  // Анкетные данные сразу
+  formData.append("username", profile.caption);
+  formData.append("answers", JSON.stringify(
     profile.questions.map((q, i) => ({
       question: q,
       answer: answers[i] || ""
     }))
-  );
-
-  const photoPrepPromise = preparePhotoBlobs(profile);
-
-  formData.append("username", profile.caption);
-  formData.append("answers", answersJSON);
+  ));
 
   try {
+    // Стартуем подготовку фото (не ждём)
+    const photoPromise = preparePhotoBlobs(profile);
 
-    const blobs = await photoPrepPromise;
+    // Пока фото готовятся, отправка формы "почти готова"
+    const blobs = await photoPromise;
 
+    // Фото → добавляем после их подготовки
     if (blobs.photo) {
       formData.append("photo", blobs.photo, "photo.jpg");
     }
@@ -278,7 +279,7 @@ async function submitResults(profile, answers) {
       formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
     });
 
-    // Отправка
+    // Отправляем полностью готовую форму
     const res = await fetch("/submit", {
       method: "POST",
       body: formData
@@ -305,7 +306,6 @@ async function submitResults(profile, answers) {
     alert("Не удалось связаться с сервером 😢");
   }
 }
-
 
 // Прогресс
 function saveProgress(profileName, idx, answers) {
