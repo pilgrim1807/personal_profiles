@@ -178,19 +178,19 @@ def cached_static(directory: str, prefix: str):
 for folder in ["assets", "css", "js", "fonts", "audio"]:
     cached_static(os.path.join(FRONTEND_DIR, folder), f"/{folder}")
 
-@app.get("/", include_in_schema=False)
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
-@app.get("/profile.html", include_in_schema=False)
+@app.api_route("/profile.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_profile():
     return FileResponse(os.path.join(FRONTEND_DIR, "profile.html"))
 
-@app.get("/processing.html", include_in_schema=False)
+@app.api_route("/processing.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_processing():
     return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"))
 
-@app.get("/{full_path:path}", include_in_schema=False)
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
