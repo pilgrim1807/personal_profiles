@@ -13,3 +13,5 @@ Thumbs.db
 node_modules/
 dist/
 build/
+backend/credentials.json
+backend/credentials.json
