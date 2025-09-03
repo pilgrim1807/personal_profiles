@@ -254,38 +254,50 @@ function addQuestionListeners(profile, idx, answers) {
 async function submitResults(profile, answers) {
   const formData = new FormData();
 
-  // Основные данные анкеты
-  formData.append("username", profile.caption);
-  formData.append("answers", JSON.stringify(
+  const answersJSON = JSON.stringify(
     profile.questions.map((q, i) => ({
       question: q,
       answer: answers[i] || ""
     }))
-  ));
+  );
 
-  // Подготовка фото (гарантированно до отправки)
-  const blobs = await preparePhotoBlobs(profile);
+  const photoPrepPromise = preparePhotoBlobs(profile);
 
-  if (blobs.photo) {
-    formData.append("photo", blobs.photo, "photo.jpg");
-  }
-
-  blobs.photos.forEach((blob, i) => {
-    formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
-  });
+  formData.append("username", profile.caption);
+  formData.append("answers", answersJSON);
 
   try {
+
+    const blobs = await photoPrepPromise;
+
+    if (blobs.photo) {
+      formData.append("photo", blobs.photo, "photo.jpg");
+    }
+
+    blobs.photos.forEach((blob, i) => {
+      formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
+    });
+
+    // Отправка
     const res = await fetch("/submit", {
       method: "POST",
       body: formData
     });
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Ошибка от сервера:", errorText);
+      alert("Произошла ошибка при отправке данных. Попробуй снова.");
+      return;
+    }
+
     const data = await res.json();
 
     if (data.status === "ok") {
       localStorage.setItem("test_finished", "true");
-      window.location.href = `processing.html?name=${encodeURIComponent(profile.caption)}`;
+      window.location.href = "/processing.html?name=" + encodeURIComponent(profile.caption);
     } else {
+      console.error("Ошибка ответа:", data);
       alert("Ошибка при отправке. Попробуй снова.");
     }
   } catch (err) {

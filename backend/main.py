@@ -178,6 +178,8 @@ def cached_static(directory: str, prefix: str):
 for folder in ["assets", "css", "js", "fonts", "audio"]:
     cached_static(os.path.join(FRONTEND_DIR, folder), f"/{folder}")
 
+from fastapi.responses import FileResponse
+
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_index():
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
@@ -190,7 +192,17 @@ async def serve_profile():
 async def serve_processing():
     return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"))
 
+from pathlib import Path
+
 @app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
+    safe_path = os.path.normpath(os.path.join(FRONTEND_DIR, full_path))
+    if not safe_path.startswith(os.path.abspath(FRONTEND_DIR)):
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+    if os.path.exists(safe_path) and os.path.isfile(safe_path):
+        return FileResponse(safe_path)
+
     return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
 
