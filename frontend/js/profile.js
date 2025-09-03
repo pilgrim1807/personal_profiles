@@ -254,7 +254,7 @@ function addQuestionListeners(profile, idx, answers) {
 async function submitResults(profile, answers) {
   const formData = new FormData();
 
-  // Добавляем имя пользователя и ответы
+  // Основные данные анкеты
   formData.append("username", profile.caption);
   formData.append("answers", JSON.stringify(
     profile.questions.map((q, i) => ({
@@ -263,26 +263,16 @@ async function submitResults(profile, answers) {
     }))
   ));
 
-  // Основное фото
-  if (profile.photo instanceof File || profile.photo instanceof Blob) {
-    formData.append("photo", profile.photo, "photo.jpg");
-  } else if (typeof profile.photo === "string") {
-    const blob = await fetch(profile.photo).then(res => res.blob()).catch(() => null);
-    if (blob) formData.append("photo", blob, "photo.jpg");
+  // Подготовка фото (гарантированно до отправки)
+  const blobs = await preparePhotoBlobs(profile);
+
+  if (blobs.photo) {
+    formData.append("photo", blobs.photo, "photo.jpg");
   }
 
-  // Дополнительные фото
-  if (Array.isArray(profile.photos)) {
-    for (let i = 0; i < profile.photos.length; i++) {
-      const p = profile.photos[i];
-      if (p instanceof File || p instanceof Blob) {
-        formData.append(`photos[${i}]`, p, `photo_${i}.jpg`);
-      } else if (typeof p === "string") {
-        const blob = await fetch(p).then(res => res.blob()).catch(() => null);
-        if (blob) formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
-      }
-    }
-  }
+  blobs.photos.forEach((blob, i) => {
+    formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
+  });
 
   try {
     const res = await fetch("/submit", {
@@ -303,6 +293,7 @@ async function submitResults(profile, answers) {
     alert("Не удалось связаться с сервером 😢");
   }
 }
+
 
 // Прогресс
 function saveProgress(profileName, idx, answers) {
