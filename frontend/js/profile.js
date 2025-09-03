@@ -5,6 +5,7 @@ function getParam(name) {
 
 const FADE_DURATION = 320;
 
+// Эффекты
 function fadeIn(el) {
   el.style.opacity = 0;
   el.style.transition = `opacity ${FADE_DURATION}ms`;
@@ -24,6 +25,7 @@ function playSound(src) {
   audio.play().catch(() => {});
 }
 
+// Модальные окна
 function showModal(id) {
   const modal = document.getElementById(id);
   if (modal) modal.classList.remove("hidden");
@@ -42,7 +44,23 @@ function triggerFlashWithSound() {
   setTimeout(() => flash.remove(), 1700);
 }
 
-// динамические мета-теги
+// Прелоадинг картинок
+function preloadImages(urls, callback) {
+  let loaded = 0;
+  const total = urls.length;
+  if (total === 0) return callback();
+
+  urls.forEach((url) => {
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      loaded++;
+      if (loaded === total) callback();
+    };
+    img.src = url;
+  });
+}
+
+// Динамические мета-теги
 function setDynamicMeta(profile) {
   if (profile.title) document.title = profile.title;
   if (profile.favicon) {
@@ -65,7 +83,7 @@ function setDynamicMeta(profile) {
   }
 }
 
-// рендер вопросов
+// Рендер вопросов
 function renderQuestion(profile, idx, answers) {
   const n = profile.questions.length;
   const question = profile.questions[idx];
@@ -232,21 +250,44 @@ function addQuestionListeners(profile, idx, answers) {
   });
 }
 
-// отправка результатов
+// Отправка результатов (с фотографиями)
 async function submitResults(profile, answers) {
-  const payload = {
-    username: profile.caption,
-    answers: profile.questions.map((q, i) => ({
+  const formData = new FormData();
+
+  // Добавляем имя пользователя и ответы
+  formData.append("username", profile.caption);
+  formData.append("answers", JSON.stringify(
+    profile.questions.map((q, i) => ({
       question: q,
       answer: answers[i] || ""
     }))
-  };
+  ));
+
+  // Основное фото
+  if (profile.photo instanceof File || profile.photo instanceof Blob) {
+    formData.append("photo", profile.photo, "photo.jpg");
+  } else if (typeof profile.photo === "string") {
+    const blob = await fetch(profile.photo).then(res => res.blob()).catch(() => null);
+    if (blob) formData.append("photo", blob, "photo.jpg");
+  }
+
+  // Дополнительные фото
+  if (Array.isArray(profile.photos)) {
+    for (let i = 0; i < profile.photos.length; i++) {
+      const p = profile.photos[i];
+      if (p instanceof File || p instanceof Blob) {
+        formData.append(`photos[${i}]`, p, `photo_${i}.jpg`);
+      } else if (typeof p === "string") {
+        const blob = await fetch(p).then(res => res.blob()).catch(() => null);
+        if (blob) formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
+      }
+    }
+  }
 
   try {
     const res = await fetch("/submit", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: formData
     });
 
     const data = await res.json();
@@ -263,7 +304,7 @@ async function submitResults(profile, answers) {
   }
 }
 
-// прогресс
+// Прогресс
 function saveProgress(profileName, idx, answers) {
   localStorage.setItem(`progress_${profileName}`, JSON.stringify({ idx, answers }));
 }
@@ -281,7 +322,7 @@ function loadProgress(profileName, n) {
   return { idx: 0, answers: Array(n).fill(null) };
 }
 
-// пузырьки
+// Пузырики
 function spawnBubbles(container) {
   setInterval(() => {
     if (!document.body.contains(container)) return;
@@ -312,7 +353,7 @@ function spawnBubbles(container) {
   }, 180);
 }
 
-// начало
+// Старт
 function startProfileTest(profile, idx, answers, loader) {
   triggerFlashWithSound();
   setTimeout(() => {
@@ -345,23 +386,31 @@ window.onload = function () {
   loader.className = "page-loader";
   document.body.appendChild(loader);
 
-  const hasProgress = localStorage.getItem(`progress_${name}`) !== null;
+  // Прелоадим все фото
+  const photos = [];
+  if (profile.photo) photos.push(profile.photo);
+  if (profile.photos) photos.push(...profile.photos);
 
-  if (!hasProgress && idx === 0) {
-    showModal("flash-sound-modal");
-    const flashBtn = document.getElementById("flash-sound-btn");
-    flashBtn.textContent = "Начать просмотр";
-    flashBtn.addEventListener("click", () => {
-      hideModal("flash-sound-modal");
-      startProfileTest(profile, 0, answers, loader);
-    });
-  } else {
-    showModal("intro-modal");
-    const introBtn = document.getElementById("intro-btn");
-    introBtn.textContent = "Продолжить просмотр";
-    introBtn.addEventListener("click", () => {
-      hideModal("intro-modal");
-      startProfileTest(profile, idx, answers, loader);
-    });
-  }
+  preloadImages(photos, () => {
+    const hasProgress = localStorage.getItem(`progress_${name}`) !== null;
+
+    if (!hasProgress && idx === 0) {
+      showModal("flash-sound-modal");
+      const flashBtn = document.getElementById("flash-sound-btn");
+      flashBtn.textContent = "Начать просмотр";
+      flashBtn.addEventListener("click", () => {
+        hideModal("flash-sound-modal");
+        startProfileTest(profile, 0, answers, loader);
+      });
+    } else {
+      showModal("intro-modal");
+      const introBtn = document.getElementById("intro-btn");
+      introBtn.textContent = "Продолжить просмотр";
+      introBtn.addEventListener("click", () => {
+        hideModal("intro-modal");
+        startProfileTest(profile, idx, answers, loader);
+      });
+    }
+  });
 };
+

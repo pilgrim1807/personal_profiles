@@ -1,6 +1,5 @@
 const PROFILES = {
   "Сергей": {
-    photo: "assets/names/sergey.webp",
     theme: "sergey",
     caption: "Сергей",
     title: "Анкета для Сергея",
@@ -76,7 +75,6 @@ const PROFILES = {
   },
 
   "Андрей": {
-    photo: "assets/names/andrey.webp",
     theme: "andrey",
     caption: "Андрей",
     title: "Анкета для Андрея",
@@ -150,7 +148,6 @@ const PROFILES = {
   },
 
   "Соня": {
-    photo: "assets/names/sonya.webp",
     theme: "sonya",
     caption: "Соня",
     title: "Анкета для Сони",
@@ -224,7 +221,6 @@ const PROFILES = {
   },
 
   "Валера": {
-    photo: "assets/names/valera.webp",
     theme: "valera",
     caption: "Валера",
     title: "Анкета для Валеры",
@@ -298,7 +294,6 @@ const PROFILES = {
   },
 
   "Воваха": {
-    photo: "assets/names/vovaha.webp",
     theme: "vovaha",
     caption: "Воваха",
     title: "Анкета для Вовахи",
