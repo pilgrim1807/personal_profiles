@@ -252,6 +252,8 @@ function addQuestionListeners(profile, idx, answers) {
 
 // Отправка результатов (с фотографиями)
 async function submitResults(profile, answers) {
+  console.log("🟢 submitResults() вызван");
+
   const formData = new FormData();
 
   // Анкетные данные сразу
@@ -264,13 +266,12 @@ async function submitResults(profile, answers) {
   ));
 
   try {
-    // Стартуем подготовку фото (не ждём)
-    const photoPromise = preparePhotoBlobs(profile);
+    console.log("📷 Подготовка фото...");
+    const photoPromise = preparePhotoBlobs(profile); // параллельно
 
-    // Пока фото готовятся, отправка формы "почти готова"
     const blobs = await photoPromise;
+    console.log("📷 Фото готовы:", blobs);
 
-    // Фото → добавляем после их подготовки
     if (blobs.photo) {
       formData.append("photo", blobs.photo, "photo.jpg");
     }
@@ -279,7 +280,11 @@ async function submitResults(profile, answers) {
       formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
     });
 
-    // Отправляем полностью готовую форму
+    console.log("📦 formData к отправке:");
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
     const res = await fetch("/submit", {
       method: "POST",
       body: formData
@@ -287,25 +292,27 @@ async function submitResults(profile, answers) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("Ошибка от сервера:", errorText);
-      alert("Произошла ошибка при отправке данных. Попробуй снова.");
+      console.error("❌ Ошибка от сервера:", errorText);
+      alert("Ошибка при отправке. Попробуй снова.");
       return;
     }
 
     const data = await res.json();
 
     if (data.status === "ok") {
+      console.log("✅ Успешно отправлено");
       localStorage.setItem("test_finished", "true");
       window.location.href = "/processing.html?name=" + encodeURIComponent(profile.caption);
     } else {
-      console.error("Ошибка ответа:", data);
+      console.error("❌ Ошибка ответа:", data);
       alert("Ошибка при отправке. Попробуй снова.");
     }
   } catch (err) {
-    console.error("Ошибка при отправке:", err);
+    console.error("🚨 Ошибка при отправке:", err);
     alert("Не удалось связаться с сервером 😢");
   }
 }
+
 
 // Прогресс
 function saveProgress(profileName, idx, answers) {

@@ -123,7 +123,7 @@ class AnswerBatch(BaseModel):
 
 # --- API ---
 @app.post("/submit")
-def submit_answers(data: AnswerBatch, _: str = Depends(check_token)):
+def submit_answers(data: AnswerBatch):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     saved_answers = []
 
