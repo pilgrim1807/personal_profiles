@@ -328,6 +328,36 @@ async function submitResults(profile, answers) {
   }
 }
 
+// Получаем имя пользователя из URL
+const params = new URLSearchParams(window.location.search);
+const username = params.get("name") || "Аноним";
+
+// После завершения теста вызываем эту функцию
+async function submitAnswers(answers) {
+  const formData = new FormData();
+  formData.append("username", username);
+  formData.append("answers", JSON.stringify(answers)); // [{question: "...", answer: "..."}]
+
+  try {
+    const response = await fetch("https://personal-applications-2-5.onrender.com/submit", {
+      method: "POST",
+      body: formData
+    });
+
+    const result = await response.json();
+    if (result.status === "ok") {
+      localStorage.setItem("test_finished", "1");
+      window.location.href = "processing.html";
+    } else {
+      console.warn("Ошибка при отправке:", result);
+      alert("Ответы сохранены локально, но не отправлены в Google Sheets.");
+    }
+  } catch (error) {
+    console.error("Ошибка при отправке:", error);
+    alert("Произошла ошибка при отправке данных. Проверьте подключение.");
+  }
+}
+
 // Прогресс
 function saveProgress(profileName, idx, answers) {
   localStorage.setItem(`progress_${profileName}`, JSON.stringify({ idx, answers }));
