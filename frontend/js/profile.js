@@ -1,4 +1,3 @@
-// profile.js
 function getParam(name) {
   const url = new URL(window.location.href);
   return url.searchParams.get(name);
@@ -10,9 +9,7 @@ const FADE_DURATION = 320;
 function fadeIn(el) {
   el.style.opacity = 0;
   el.style.transition = `opacity ${FADE_DURATION}ms`;
-  setTimeout(() => {
-    el.style.opacity = 1;
-  }, 30);
+  setTimeout(() => { el.style.opacity = 1; }, 30);
 }
 
 function fadeOut(el, cb) {
@@ -25,7 +22,7 @@ function fadeOut(el, cb) {
 function playSound(src) {
   const audio = new Audio(src);
   audio.currentTime = 0;
-  audio.play().catch(() => {});
+  audio.play().catch(() => { });
 }
 
 // Модальные окна
@@ -56,7 +53,7 @@ function preloadImages(urls, callback) {
   urls.forEach((url) => {
     const img = new Image();
     img.onload = img.onerror = () => {
-      loaded += 1;
+      loaded++;
       if (loaded === total) callback();
     };
     img.src = url;
@@ -66,7 +63,6 @@ function preloadImages(urls, callback) {
 // Динамические мета-теги
 function setDynamicMeta(profile) {
   if (profile.title) document.title = profile.title;
-
   if (profile.favicon) {
     let link = document.querySelector("link[rel~='icon']");
     if (!link) {
@@ -76,24 +72,22 @@ function setDynamicMeta(profile) {
     }
     link.href = profile.favicon;
   }
-
-  const contentImage = profile.shareImage || profile.photo || "";
-  let ogImage = document.querySelector("meta[property='og:image']");
-  if (!ogImage) {
-    ogImage = document.createElement("meta");
-    ogImage.setAttribute("property", "og:image");
-    document.head.appendChild(ogImage);
+  const ogImage = document.querySelector("meta[property='og:image']");
+  if (ogImage) {
+    ogImage.setAttribute("content", profile.shareImage || profile.photo);
+  } else {
+    const meta = document.createElement("meta");
+    meta.setAttribute("property", "og:image");
+    meta.setAttribute("content", profile.shareImage || profile.photo);
+    document.head.appendChild(meta);
   }
-  ogImage.setAttribute("content", contentImage);
 }
 
 // Рендер вопросов
 function renderQuestion(profile, idx, answers) {
   const n = profile.questions.length;
   const question = profile.questions[idx];
-  const photo =
-    (profile.photos && profile.photos[idx]) ? profile.photos[idx] :
-    (profile.photo || "");
+  const photo = (profile.photos && profile.photos[idx]) || profile.photo || "";
 
   return `
     <div class="profile-question profile-question--${profile.theme}" style="opacity:0">
@@ -116,25 +110,23 @@ function renderQuestion(profile, idx, answers) {
                 <span>Да</span>
               </label>
               <label class="profile-question__radio">
-                <input type="radio" name="answer" value="no" ${(answers[idx] && answers[idx] !== 'yes') ? 'checked' : ''}>
+                <input type="radio" name="answer" value="no" ${answers[idx] && answers[idx] !== 'yes' ? 'checked' : ''}>
                 <span>Нет</span>
               </label>
             </div>
-            <div class="profile-question__custom-block" style="display:${(answers[idx] && !['yes', 'no'].includes(answers[idx])) ? '' : 'none'};">
+            <div class="profile-question__custom-block" style="display:${answers[idx] && !['yes', 'no'].includes(answers[idx]) ? '' : 'none'};">
               <input type="text" class="profile-question__custom" placeholder="Напишите свой вариант..." value="${(!['yes', 'no', null].includes(answers[idx]) ? answers[idx] : '')}">
             </div>
             <div class="profile-question__controls">
-              ${
-                idx === n - 1
-                  ? `
-                    <button type="button" class="profile-question__prev">Предыдущий</button>
-                    <button type="submit" class="profile-question__submit" disabled>Отправить</button>
-                  `
-                  : `
-                    <button type="button" class="profile-question__prev"${idx === 0 ? " disabled" : ""}>Предыдущий</button>
-                    <button type="submit" class="profile-question__next" disabled>Следующий</button>
-                  `
-              }
+              ${idx === n - 1
+      ? `
+                  <button type="button" class="profile-question__prev">Предыдущий</button>
+                  <button type="submit" class="profile-question__submit" disabled>Отправить</button>
+                `
+      : `
+                  <button type="button" class="profile-question__prev"${idx === 0 ? " disabled" : ""}>Предыдущий</button>
+                  <button type="submit" class="profile-question__next" disabled>Следующий</button>
+                `}
             </div>
           </form>
         </div>
@@ -144,13 +136,12 @@ function renderQuestion(profile, idx, answers) {
 }
 
 function showQuestion(profile, idx, answers) {
-  const app = document.getElementById("profile-app");
+  const app = document.getElementById('profile-app');
   if (!app) return;
-  const old = app.querySelector(".profile-question");
-
+  const old = app.querySelector('.profile-question');
   const inject = () => {
     app.innerHTML = renderQuestion(profile, idx, answers);
-    fadeIn(app.querySelector(".profile-question"));
+    fadeIn(app.querySelector('.profile-question'));
     addQuestionListeners(profile, idx, answers);
 
     const bubblesContainer = app.querySelector(".bubbles");
@@ -164,49 +155,47 @@ function showQuestion(profile, idx, answers) {
       setTimeout(() => flash.remove(), 1700);
     }
   };
-
-  if (old) fadeOut(old, inject);
-  else inject();
+  if (old) fadeOut(old, inject); else inject();
 }
 
 function addQuestionListeners(profile, idx, answers) {
-  const form = document.querySelector(".profile-question__answers");
+  const form = document.querySelector('.profile-question__answers');
   const radios = form.querySelectorAll('input[type="radio"]');
-  const customBlock = form.querySelector(".profile-question__custom-block");
-  const customInput = form.querySelector(".profile-question__custom");
-  const nextBtn = form.querySelector(".profile-question__next");
-  const prevBtn = form.querySelector(".profile-question__prev");
-  const submitBtn = form.querySelector(".profile-question__submit");
+  const customBlock = form.querySelector('.profile-question__custom-block');
+  const customInput = form.querySelector('.profile-question__custom');
+  const nextBtn = form.querySelector('.profile-question__next');
+  const prevBtn = form.querySelector('.profile-question__prev');
+  const submitBtn = form.querySelector('.profile-question__submit');
   const n = profile.questions.length;
 
   let submitted = false; // защита от двойной отправки
 
-  // Состояние при загрузке
+  // Установить состояние при загрузке
   const currentAnswer = answers[idx];
-  if (currentAnswer === "yes") {
-    customBlock.style.display = "none";
+  if (currentAnswer === 'yes') {
+    customBlock.style.display = 'none';
     if (nextBtn) nextBtn.disabled = false;
     if (submitBtn) submitBtn.disabled = false;
-  } else if (currentAnswer && !["yes", "no"].includes(currentAnswer)) {
-    customBlock.style.display = "";
+  } else if (currentAnswer && !['yes', 'no'].includes(currentAnswer)) {
+    customBlock.style.display = '';
     if (nextBtn) nextBtn.disabled = false;
     if (submitBtn) submitBtn.disabled = false;
-  } else if (currentAnswer === "no") {
-    customBlock.style.display = "";
+  } else if (currentAnswer === 'no') {
+    customBlock.style.display = '';
   }
 
-  // Выбор радио
-  radios.forEach((radio) => {
-    radio.addEventListener("change", () => {
-      if (radio.value === "yes") {
-        answers[idx] = "yes";
-        customBlock.style.display = "none";
+  // Обработка выбора радиокнопки
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.value === 'yes') {
+        answers[idx] = 'yes';
+        customBlock.style.display = 'none';
         if (nextBtn) nextBtn.disabled = false;
         if (submitBtn) submitBtn.disabled = false;
-      } else if (radio.value === "no") {
-        answers[idx] = "";
-        customInput.value = "";
-        customBlock.style.display = "";
+      } else if (radio.value === 'no') {
+        answers[idx] = '';
+        customInput.value = '';
+        customBlock.style.display = '';
         if (nextBtn) nextBtn.disabled = true;
         if (submitBtn) submitBtn.disabled = true;
         setTimeout(() => customInput.focus(), 100);
@@ -215,119 +204,129 @@ function addQuestionListeners(profile, idx, answers) {
     });
   });
 
-  // Ввод кастомного ответа
-  customInput.addEventListener("input", () => {
+  // Обработка ввода текста
+  customInput.addEventListener('input', () => {
     if (radios[1].checked && customInput.value.trim().length > 0) {
       answers[idx] = customInput.value.trim();
       if (nextBtn) nextBtn.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
     } else {
-      answers[idx] = "";
+      answers[idx] = '';
       if (nextBtn) nextBtn.disabled = true;
       if (submitBtn) submitBtn.disabled = true;
     }
     saveProgress(profile.caption, idx, answers);
   });
 
-  // Назад
+  // Кнопка "Назад"
   if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
+    prevBtn.addEventListener('click', () => {
       playSound("audio/projector.mp3");
       if (idx > 0) showQuestion(profile, idx - 1, answers);
       saveProgress(profile.caption, idx - 1, answers);
     });
   }
 
-  // Сабмит формы (ВАЖНО: дожидаемся отправки → потом редирект)
-  form.addEventListener("submit", async (ev) => {
+  // Сабмит формы
+  form.addEventListener('submit', (ev) => {
     ev.preventDefault();
     if (submitted) return;
     submitted = true;
 
     const val = form.answer.value;
-    if (val === "no" && !customInput.value.trim()) {
+    if (val === 'no' && !customInput.value.trim()) {
       customInput.focus();
       submitted = false;
       return;
     }
 
-    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
+    answers[idx] = val === 'yes' ? 'yes' : customInput.value.trim();
     saveProgress(profile.caption, idx, answers);
 
     if (idx < n - 1) {
       playSound("audio/projector.mp3");
       showQuestion(profile, idx + 1, answers);
-      submitted = false;
     } else {
       playSound("audio/send.mp3");
-      // НЕ делаем window.location.href до завершения submitResults!
-      const ok = await submitResults(profile, answers);
-      if (ok) {
-        localStorage.removeItem(`progress_${profile.caption}`);
-        localStorage.setItem("test_finished", "true");
-        window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
-      } else {
-        submitted = false; // позволим попробовать снова
-      }
+      localStorage.removeItem(`progress_${profile.caption}`);
+      window.location.href = "/processing.html?name=" + encodeURIComponent(profile.caption);
+      submitResults(profile, answers); // фоновая отправка
     }
   });
 }
 
 // Заглушка для preparePhotoBlobs, если фото не нужны
-async function preparePhotoBlobs(/* profile */) {
-  return { photo: null, photos: [] };
+async function preparePhotoBlobs(profile) {
+  return {
+    photo: null,
+    photos: []
+  };
 }
 
 // Отправка результатов (с фотографиями)
 async function submitResults(profile, answers) {
+  console.log("🟢 submitResults() вызван");
+
+  const formData = new FormData();
+
+  // Анкетные данные сразу
+  formData.append("username", profile.caption);
+  formData.append("answers", JSON.stringify(
+    profile.questions.map((q, i) => ({
+      question: q,
+      answer: answers[i] || ""
+    }))
+  ));
+
   try {
-    const formData = new FormData();
+    console.log("Подготовка фото...");
+    const photoPromise = preparePhotoBlobs(profile);
 
-    formData.append("username", profile.caption);
-    formData.append(
-      "answers",
-      JSON.stringify(
-        profile.questions.map((q, i) => ({
-          question: q,
-          answer: answers[i] || "",
-        }))
-      )
-    );
+    const blobs = await photoPromise;
+    console.log("Фото готовы:", blobs);
 
-    const blobs = await preparePhotoBlobs(profile);
-    if (blobs.photo) formData.append("photo", blobs.photo, "photo.jpg");
-    (blobs.photos || []).forEach((blob, i) => {
-      formData.append(`photos`, blob, `photo_${i}.jpg`);
+    if (blobs.photo) {
+      formData.append("photo", blobs.photo, "photo.jpg");
+    }
+
+    blobs.photos.forEach((blob, i) => {
+      formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
     });
+
+    console.log("formData к отправке:");
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
 
     const res = await fetch("https://personal-applications-2-5.onrender.com/submit", {
       method: "POST",
-      body: formData,
-      keepalive: true, // на случай внезапных уходов со страницы
+      body: formData
     });
 
-    if (!res.ok) {
-      const errorText = await res.text().catch(() => "");
-      console.error("❌ Ошибка от сервера:", errorText || res.statusText);
-      alert("Ошибка при отправке. Попробуй снова.");
-      return false;
-    }
 
-    const data = await res.json().catch(() => ({}));
-    if (data && data.status === "ok") {
+if (!res.ok) {
+  const errorText = await res.text();
+  console.error("❌ Ошибка от сервера:", errorText);
+  return;
+}
+
+
+    const data = await res.json();
+
+    if (data.status === "ok") {
       console.log("✅ Успешно отправлено");
-      return true;
+      localStorage.setItem("test_finished", "true");
+      window.location.href = "/processing.html?name=" + encodeURIComponent(profile.caption);
+    } else {
+      console.error("❌ Ошибка ответа:", data);
+      alert("Ошибка при отправке. Попробуй снова.");
     }
-
-    console.error("❌ Неожиданный ответ сервера:", data);
-    alert("Ошибка при отправке. Попробуй снова.");
-    return false;
   } catch (err) {
     console.error("❌ Ошибка при отправке:", err);
     alert("Не удалось связаться с сервером 😢");
-    return false;
   }
 }
+
 
 // Прогресс
 function saveProgress(profileName, idx, answers) {
@@ -339,7 +338,7 @@ function loadProgress(profileName, n) {
   if (data) {
     try {
       const parsed = JSON.parse(data);
-      return { idx: parsed.idx || 0, answers: parsed.answers || Array(n).fill(null) };
+      return { idx: parsed.idx, answers: parsed.answers || Array(n).fill(null) };
     } catch {
       return { idx: 0, answers: Array(n).fill(null) };
     }
@@ -349,49 +348,30 @@ function loadProgress(profileName, n) {
 
 // Пузырики
 function spawnBubbles(container) {
-  const sheet = document.styleSheets[0] || (() => {
-    const style = document.createElement("style");
-    document.head.appendChild(style);
-    return style.sheet;
-  })();
-
-  const timer = setInterval(() => {
-    if (!document.body.contains(container)) {
-      clearInterval(timer);
-      return;
-    }
+  setInterval(() => {
+    if (!document.body.contains(container)) return;
     const bubble = document.createElement("span");
     bubble.classList.add("bubble");
-
     const size = Math.random() * 12 + 4;
     const left = Math.random() * 100;
     const duration = Math.random() * 3 + 3;
     const drift = (Math.random() - 0.5) * 30;
-
     bubble.style.width = `${size}px`;
     bubble.style.height = `${size}px`;
     bubble.style.left = `${left}%`;
     bubble.style.animationDuration = `${duration}s`;
-
-    const animName = `rise_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    try {
-      sheet.insertRule(
-        `
-        @keyframes ${animName} {
-          0%   { transform: translate(0,0) scale(1); opacity:0.8; }
-          25%  { transform: translate(${drift / 2}px,-20px) scale(1.1); opacity:1; }
-          50%  { transform: translate(${drift}px,-40px) scale(0.9); opacity:0.9; }
-          75%  { transform: translate(${drift / 1.5}px,-60px) scale(1.05); opacity:0.7; }
-          100% { transform: translate(${drift}px,-90px) scale(0.5); opacity:0; }
-        }
-        `,
-        sheet.cssRules.length
-      );
-      bubble.style.animationName = animName;
-    } catch {
-      // без динамического ключфрейма — не критично
-    }
-
+    const animName = `rise${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const styleSheet = document.styleSheets[0];
+    styleSheet.insertRule(`
+      @keyframes ${animName} {
+        0%   { transform: translate(0,0) scale(1); opacity:0.8; }
+        25%  { transform: translate(${drift / 2}px,-20px) scale(1.1); opacity:1; }
+        50%  { transform: translate(${drift}px,-40px) scale(0.9); opacity:0.9; }
+        75%  { transform: translate(${drift / 1.5}px,-60px) scale(1.05); opacity:0.7; }
+        100% { transform: translate(${drift}px,-90px) scale(0.5); opacity:0; }
+      }
+    `, styleSheet.cssRules.length);
+    bubble.style.animationName = animName;
     container.appendChild(bubble);
     setTimeout(() => bubble.remove(), duration * 1000);
   }, 180);
@@ -407,22 +387,22 @@ function startProfileTest(profile, idx, answers, loader) {
 }
 
 window.onload = function () {
-  const name = getParam("name");
-  if (!name || !window.PROFILES || !window.PROFILES[name]) {
+  const name = getParam('name');
+  if (!name || !PROFILES[name]) {
     document.body.innerHTML = "<h1>Ошибка! Профиль не найден.</h1>";
     return;
   }
 
-  const profile = window.PROFILES[name];
+  const profile = PROFILES[name];
   document.body.className = `profile-page profile-page--${profile.theme}`;
   setDynamicMeta(profile);
 
   const { idx, answers } = loadProgress(name, profile.questions.length);
 
-  let app = document.getElementById("profile-app");
+  let app = document.getElementById('profile-app');
   if (!app) {
-    app = document.createElement("div");
-    app.id = "profile-app";
+    app = document.createElement('div');
+    app.id = 'profile-app';
     document.body.appendChild(app);
   }
 
@@ -433,7 +413,7 @@ window.onload = function () {
   // Прелоадим все фото
   const photos = [];
   if (profile.photo) photos.push(profile.photo);
-  if (Array.isArray(profile.photos)) photos.push(...profile.photos);
+  if (profile.photos) photos.push(...profile.photos);
 
   preloadImages(photos, () => {
     const hasProgress = localStorage.getItem(`progress_${name}`) !== null;
@@ -441,27 +421,19 @@ window.onload = function () {
     if (!hasProgress && idx === 0) {
       showModal("flash-sound-modal");
       const flashBtn = document.getElementById("flash-sound-btn");
-      if (flashBtn) {
-        flashBtn.textContent = "Начать просмотр";
-        flashBtn.addEventListener("click", () => {
-          hideModal("flash-sound-modal");
-          startProfileTest(profile, 0, answers, loader);
-        });
-      } else {
+      flashBtn.textContent = "Начать просмотр";
+      flashBtn.addEventListener("click", () => {
+        hideModal("flash-sound-modal");
         startProfileTest(profile, 0, answers, loader);
-      }
+      });
     } else {
       showModal("intro-modal");
       const introBtn = document.getElementById("intro-btn");
-      if (introBtn) {
-        introBtn.textContent = "Продолжить просмотр";
-        introBtn.addEventListener("click", () => {
-          hideModal("intro-modal");
-          startProfileTest(profile, idx, answers, loader);
-        });
-      } else {
+      introBtn.textContent = "Продолжить просмотр";
+      introBtn.addEventListener("click", () => {
+        hideModal("intro-modal");
         startProfileTest(profile, idx, answers, loader);
-      }
+      });
     }
   });
 };

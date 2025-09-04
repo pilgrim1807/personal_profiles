@@ -1,4 +1,4 @@
-const PROFILES = {
+window.PROFILES = {
   "Сергей": {
     theme: "sergey",
     caption: "Сергей",
@@ -36,8 +36,6 @@ const PROFILES = {
       "assets/sergey/sergey-28.webp",
       "assets/sergey/sergey-29.webp",
       "assets/sergey/sergey-30.webp",
-      "assets/sergey/sergey-31.webp",
-      "assets/sergey/sergey-32.webp"
     ],
     questions: [
       "Ты умеешь быть лидером в команде, не стремясь быть в центре внимания?",

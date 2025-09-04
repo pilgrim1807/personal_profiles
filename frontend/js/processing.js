@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // создать модалку с пузырём
   const bubbleMessage = createModalBubble();
   const bubbleModal = document.getElementById("bubble-modal");
   const popSound = new Audio("audio/bubble.mp3");
@@ -29,7 +28,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }, 100);
 
-    // убрать модалку и показать контент плавно
     bubbleMessage.addEventListener(
       "animationend",
       () => {
@@ -136,7 +134,7 @@ function createModalBubble() {
   bubbleModal.appendChild(bubbleMessage);
   document.body.appendChild(bubbleModal);
 
-  // 🔥 Авто-масштабирование
+  // Авто-масштабирование
   setTimeout(() => {
     const svg = bubbleMessage.querySelector("svg");
     const textNodes = svg.querySelectorAll("text.autoscale");
@@ -149,11 +147,10 @@ function createModalBubble() {
       let bbox = node.getBBox();
 
       if (bbox.width > maxWidth) {
-        // если не влезает → уменьшаем
         const scale = maxWidth / bbox.width;
         node.setAttribute("font-size", fontSize * scale);
       } else {
-        // если влезает → увеличиваем до максимума
+
         while (bbox.width < maxWidth * 0.9 && fontSize < maxFontSize) {
           fontSize += 1;
           node.setAttribute("font-size", fontSize);
