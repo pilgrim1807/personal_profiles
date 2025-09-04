@@ -18,7 +18,6 @@ from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
 from starlette.responses import Response
 
-
 # Bootstrap
 
 load_dotenv()
@@ -164,7 +163,7 @@ async def submit_answers(
         conn.commit()
         conn.close()
 
-        # Google Sheets мягкий режим
+        # Google Sheets
         sheets_ok = False
         sheets_error = None
         ws = get_sheet()
@@ -196,14 +195,31 @@ async def submit_answers(
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
-    """Health check + проверка доступа к листу."""
-    ok = True
-    note = "ok"
+    ws = get_sheet()
+    return {"status": "ok" if ws else "fail", "sheet": SHEET_ID, "tab": SHEET_TAB}
+
+@app.get("/whoami", include_in_schema=False)
+def whoami():
+    """Вернуть почту сервис-аккаунта для шаринга в Google Sheets."""
+    try:
+        creds_json = os.getenv("GOOGLE_CREDENTIALS")
+        info = json.loads(creds_json) if creds_json else json.load(open("credentials.json", "r", encoding="utf-8"))
+        return {"client_email": info.get("client_email")}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/debug/google", include_in_schema=False)
+def debug_google():
+    """Пробная запись в Google Sheets для проверки доступа."""
     ws = get_sheet()
     if not ws:
-        ok = False
-        note = "no sheet access"
-    return {"status": "ok" if ok else "fail", "sheet": SHEET_ID, "tab": SHEET_TAB, "note": note}
+        return {"sheets_ok": False, "error": "no worksheet (auth or access failed)"}
+    try:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        ws.append_row(["_debug_", "ping", "ok", now], value_input_option="USER_ENTERED")
+        return {"sheets_ok": True}
+    except Exception as e:
+        return {"sheets_ok": False, "error": str(e)}
 
 # фронтенд
 
@@ -217,7 +233,6 @@ class StaticFilesCache(StaticFiles):
         resp.headers.setdefault("Cache-Control", "public, max-age=86400")
         return resp
 
-# mount static
 for folder in ["assets", "css", "js", "fonts", "audio"]:
     path = os.path.join(FRONTEND_DIR, folder)
     if os.path.exists(path):
@@ -249,7 +264,6 @@ async def serve_processing():
 
 @app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
-
     path = os.path.join(FRONTEND_DIR, full_path)
     if os.path.isfile(path):
         return FileResponse(path)
