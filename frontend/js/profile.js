@@ -168,52 +168,57 @@ function addQuestionListeners(profile, idx, answers) {
   const submitBtn = form.querySelector('.profile-question__submit');
   const n = profile.questions.length;
 
-  if (answers[idx] === 'yes') {
+  let submitted = false; // защита от двойной отправки
+
+  // Установить состояние при загрузке
+  const currentAnswer = answers[idx];
+  if (currentAnswer === 'yes') {
+    customBlock.style.display = 'none';
     if (nextBtn) nextBtn.disabled = false;
     if (submitBtn) submitBtn.disabled = false;
-    customBlock.style.display = 'none';
-  }
-  if (answers[idx] === 'no' || (answers[idx] && !['yes', 'no'].includes(answers[idx]))) {
+  } else if (currentAnswer && !['yes', 'no'].includes(currentAnswer)) {
     customBlock.style.display = '';
-    if (answers[idx] && !['yes', 'no'].includes(answers[idx]) && answers[idx].length > 0) {
-      if (nextBtn) nextBtn.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
-    }
+    if (nextBtn) nextBtn.disabled = false;
+    if (submitBtn) submitBtn.disabled = false;
+  } else if (currentAnswer === 'no') {
+    customBlock.style.display = '';
   }
 
+  // Обработка выбора радиокнопки
   radios.forEach(radio => {
     radio.addEventListener('change', () => {
-      if (radio.value === 'yes' && radio.checked) {
+      if (radio.value === 'yes') {
+        answers[idx] = 'yes';
         customBlock.style.display = 'none';
         if (nextBtn) nextBtn.disabled = false;
         if (submitBtn) submitBtn.disabled = false;
-        answers[idx] = 'yes';
-      }
-      if (radio.value === 'no' && radio.checked) {
-        customBlock.style.display = '';
+      } else if (radio.value === 'no') {
+        answers[idx] = '';
         customInput.value = '';
+        customBlock.style.display = '';
         if (nextBtn) nextBtn.disabled = true;
         if (submitBtn) submitBtn.disabled = true;
-        answers[idx] = '';
-        setTimeout(() => customInput.focus(), 120);
+        setTimeout(() => customInput.focus(), 100);
       }
       saveProgress(profile.caption, idx, answers);
     });
   });
 
+  // Обработка ввода текста
   customInput.addEventListener('input', () => {
     if (radios[1].checked && customInput.value.trim().length > 0) {
       answers[idx] = customInput.value.trim();
       if (nextBtn) nextBtn.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
     } else {
+      answers[idx] = '';
       if (nextBtn) nextBtn.disabled = true;
       if (submitBtn) submitBtn.disabled = true;
-      answers[idx] = '';
     }
     saveProgress(profile.caption, idx, answers);
   });
 
+  // Кнопка "Назад"
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
       playSound("audio/projector.mp3");
@@ -222,30 +227,30 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
-  form.addEventListener('submit', function (ev) {
+  // Сабмит формы
+  form.addEventListener('submit', (ev) => {
     ev.preventDefault();
-    let val = form.answer.value;
-    if (val === 'no') {
-      if (!customInput.value.trim()) {
-        customInput.focus();
-        return;
-      }
-      answers[idx] = customInput.value.trim();
+    if (submitted) return;
+    submitted = true;
+
+    const val = form.answer.value;
+    if (val === 'no' && !customInput.value.trim()) {
+      customInput.focus();
+      submitted = false;
+      return;
     }
-    if (val === 'yes') {
-      answers[idx] = 'yes';
-    }
+
+    answers[idx] = val === 'yes' ? 'yes' : customInput.value.trim();
+    saveProgress(profile.caption, idx, answers);
 
     if (idx < n - 1) {
       playSound("audio/projector.mp3");
       showQuestion(profile, idx + 1, answers);
-      saveProgress(profile.caption, idx + 1, answers);
     } else {
       playSound("audio/send.mp3");
-      setTimeout(() => {
-        submitResults(profile, answers);
-        localStorage.removeItem(`progress_${profile.caption}`);
-      }, 1000);
+      localStorage.removeItem(`progress_${profile.caption}`);
+      window.location.href = "/processing.html?name=" + encodeURIComponent(profile.caption);
+      submitResults(profile, answers); // фоновая отправка
     }
   });
 }
@@ -299,12 +304,12 @@ async function submitResults(profile, answers) {
     });
 
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ Ошибка от сервера:", errorText);
-      alert("Ошибка при отправке. Попробуй снова.");
-      return;
-    }
+if (!res.ok) {
+  const errorText = await res.text();
+  console.error("❌ Ошибка от сервера:", errorText);
+  return;
+}
+
 
     const data = await res.json();
 
@@ -432,4 +437,3 @@ window.onload = function () {
     }
   });
 };
-
