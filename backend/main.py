@@ -174,20 +174,20 @@ from fastapi import HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.responses import Response
-from pathlib import Path
 
+# --- Путь к фронтенду ---
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend")
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
+# --- Кешируемые статики ---
 class StaticFilesCache(StaticFiles):
     def file_response(self, *args, **kwargs) -> Response:
         resp = super().file_response(*args, **kwargs)
-        resp.headers.setdefault("Cache-Control", "public, max-age=86400")
+        resp.headers.setdefault("Cache-Control", "public, max-age=86400")  # 1 день
         return resp
 
-# --- статические папки ---
+# --- Монтируем статику ---
 static_folders = ["assets", "css", "js", "fonts", "audio"]
-
 for folder in static_folders:
     folder_path = os.path.join(FRONTEND_DIR, folder)
     if os.path.exists(folder_path):
@@ -203,7 +203,7 @@ if os.path.exists(favicon_path):
     async def favicon():
         return FileResponse(favicon_path)
 
-# --- HTML-страницы ---
+# --- HTML страницы ---
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_index():
     return FileResponse(INDEX_FILE, media_type="text/html")
@@ -222,11 +222,13 @@ async def catch_all(full_path: str):
     safe_path = os.path.normpath(os.path.join(FRONTEND_DIR, full_path))
     frontend_abs = os.path.abspath(FRONTEND_DIR)
 
+    # Защита от выхода за пределы директории
     if not safe_path.startswith(frontend_abs):
         return FileResponse(INDEX_FILE, media_type="text/html")
 
     if os.path.exists(safe_path) and os.path.isfile(safe_path):
         return FileResponse(safe_path)
 
-    # SPA fallback — index.html
+    # SPA fallback
     return FileResponse(INDEX_FILE, media_type="text/html")
+
