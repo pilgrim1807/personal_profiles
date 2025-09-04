@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'Permanent Marker';
-  src: url('../fonts/PermanentMarker.woff2') format('woff2'),
-       url('../fonts/PermanentMarker.woff') format('woff');
+  src: url('/fonts/PermanentMarker.woff2') format('woff2'),
+       url('/fonts/PermanentMarker.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -9,8 +9,8 @@
 
 @font-face {
   font-family: 'Caveat';
-  src: url('../fonts/Caveat-Bold.woff2') format('woff2'),
-       url('../fonts/Caveat-Bold.woff') format('woff');
+  src: url('/fonts/Caveat-Bold.woff2') format('woff2'),
+       url('/fonts/Caveat-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -18,8 +18,8 @@
 
 @font-face {
   font-family: 'Pacifico';
-  src: url('../fonts/Pacifico-Pro.woff2') format('woff2'),
-       url('../fonts/Pacifico-Pro.woff') format('woff');
+  src: url('/fonts/Pacifico-Pro.woff2') format('woff2'),
+       url('/fonts/Pacifico-Pro.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -27,8 +27,8 @@
 
 @font-face {
   font-family: 'Manrope';
-  src: url('../fonts/Manrope.woff2') format('woff2'),
-       url('../fonts/Manrope.woff') format('woff');
+  src: url('/fonts/Manrope.woff2') format('woff2'),
+       url('/fonts/Manrope.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -36,8 +36,8 @@
 
 @font-face {
   font-family: 'Manrope-Semibold';
-  src: url('../fonts/Manrope-Semibold.woff2') format('woff2'),
-       url('../fonts/Manrope-Semibold.woff') format('woff');
+  src: url('/fonts/Manrope-Semibold.woff2') format('woff2'),
+       url('/fonts/Manrope-Semibold.woff') format('woff');
   font-weight: 600;
   font-style: normal;
   font-display: swap;
@@ -45,9 +45,8 @@
 
 @font-face {
   font-family: 'Oranienbaum';
-  src: url('../assets/fonts/Oranienbaum-Regular.woff2') format('woff2'),
-       url('../assets/fonts/Oranienbaum-Regular.woff') format('woff'),
-       url('../assets/fonts/Oranienbaum-Regular.ttf') format('truetype');
+  src: url('/fonts/Oranienbaum-Regular.woff2') format('woff2'),
+       url('/fonts/Oranienbaum-Regular.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

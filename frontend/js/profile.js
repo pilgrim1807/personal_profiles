@@ -250,6 +250,14 @@ function addQuestionListeners(profile, idx, answers) {
   });
 }
 
+// Заглушка для preparePhotoBlobs, если фото не нужны
+async function preparePhotoBlobs(profile) {
+  return {
+    photo: null,
+    photos: []
+  };
+}
+
 // Отправка результатов (с фотографиями)
 async function submitResults(profile, answers) {
   console.log("🟢 submitResults() вызван");
@@ -266,11 +274,11 @@ async function submitResults(profile, answers) {
   ));
 
   try {
-    console.log("📷 Подготовка фото...");
+    console.log("Подготовка фото...");
     const photoPromise = preparePhotoBlobs(profile);
 
     const blobs = await photoPromise;
-    console.log("📷 Фото готовы:", blobs);
+    console.log("Фото готовы:", blobs);
 
     if (blobs.photo) {
       formData.append("photo", blobs.photo, "photo.jpg");
@@ -280,7 +288,7 @@ async function submitResults(profile, answers) {
       formData.append(`photos[${i}]`, blob, `photo_${i}.jpg`);
     });
 
-    console.log("📦 formData к отправке:");
+    console.log("formData к отправке:");
     for (const [key, value] of formData.entries()) {
       console.log(`${key}:`, value);
     }
@@ -309,7 +317,7 @@ async function submitResults(profile, answers) {
       alert("Ошибка при отправке. Попробуй снова.");
     }
   } catch (err) {
-    console.error("🚨 Ошибка при отправке:", err);
+    console.error("❌ Ошибка при отправке:", err);
     alert("Не удалось связаться с сервером 😢");
   }
 }
