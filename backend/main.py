@@ -170,14 +170,14 @@ def health_check():
 
 # --- Фронтенд ---
 import os
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.responses import Response
-from fastapi import FastAPI
 
+# --- Инициализация приложения ---
 app = FastAPI()
 
-# --- Путь к фронтенду ---
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend")
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
@@ -187,17 +187,16 @@ class StaticFilesCache(StaticFiles):
         resp.headers.setdefault("Cache-Control", "public, max-age=86400")
         return resp
 
-# --- статика ---
+# --- Подключение статики ---
 static_folders = ["assets", "css", "js", "fonts", "audio"]
+
 for folder in static_folders:
     folder_path = os.path.join(FRONTEND_DIR, folder)
     if os.path.exists(folder_path):
-        if folder == "assets":
-            app.mount(f"/{folder}", StaticFilesCache(directory=folder_path), name=folder)
-        else:
-            app.mount(f"/{folder}", StaticFiles(directory=folder_path), name=folder)
+        mount_cls = StaticFilesCache if folder == "assets" else StaticFiles
+        app.mount(f"/{folder}", mount_cls(directory=folder_path), name=folder)
 
-# --- favicon ---
+# --- Favicon ---
 favicon_path = os.path.join(FRONTEND_DIR, "assets", "favicons", "favicon.ico")
 if os.path.exists(favicon_path):
     @app.get("/favicon.ico", include_in_schema=False)
@@ -209,26 +208,28 @@ if os.path.exists(favicon_path):
 async def serve_index():
     return FileResponse(INDEX_FILE, media_type="text/html")
 
+
 @app.api_route("/profile.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_profile():
     return FileResponse(os.path.join(FRONTEND_DIR, "profile.html"), media_type="text/html")
+
 
 @app.api_route("/processing.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_processing():
     return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"), media_type="text/html")
 
-# --- SPA fallback + защита ---
+# --- SPA ---
 @app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
     safe_path = os.path.normpath(os.path.join(FRONTEND_DIR, full_path))
     frontend_abs = os.path.abspath(FRONTEND_DIR)
 
-
+    # Защита
     if not safe_path.startswith(frontend_abs):
         return FileResponse(INDEX_FILE, media_type="text/html")
 
     if os.path.exists(safe_path) and os.path.isfile(safe_path):
         return FileResponse(safe_path)
 
-    # SPA
+    # Fallback на index.html
     return FileResponse(INDEX_FILE, media_type="text/html")
