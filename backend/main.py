@@ -141,10 +141,6 @@ async def submit_answers(
     photo: UploadFile = File(None),
     photos: List[UploadFile] = File(default=[]),
 ):
-    """
-    Сохраняет ответы: SQLite (всегда) + Google Sheets (по возможности, первый лист).
-    Возвращает диагностику: sheets_ok, sheets_error, tab_used.
-    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
@@ -166,7 +162,7 @@ async def submit_answers(
         conn.commit()
         conn.close()
 
-        # Google Sheets (первый лист)
+        # Google Sheets (горизонтальный формат: одна строка = одна анкета)
         sheets_ok = False
         sheets_error = None
         tab_used = None
@@ -175,12 +171,17 @@ async def submit_answers(
         if ws:
             try:
                 tab_used = ws.title
-                rows_for_sheet = [
-                    [username, item.get("question", ""), item.get("answer", ""), now]
-                    for item in parsed
-                ]
-                if rows_for_sheet:
-                    ws.append_rows(rows_for_sheet, value_input_option="USER_ENTERED")
+                row = [username, now]
+                for item in parsed:
+                    raw_answer = item.get("answer", "")
+                    if raw_answer == "yes":
+                        answer = "да"
+                    elif raw_answer == "no":
+                        answer = "нет"
+                    else:
+                        answer = f"нет ({raw_answer})" if raw_answer else "нет"
+                    row.append(answer)
+                ws.append_row(row, value_input_option="USER_ENTERED")
                 sheets_ok = True
             except Exception as e:
                 sheets_error = str(e)
