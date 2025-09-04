@@ -18,10 +18,8 @@ from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
 from starlette.responses import Response
 
-# Bootstrap & config
-
+# Bootstrap
 load_dotenv()
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,6 @@ CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
 DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "tests.db"))
 
 app = FastAPI(title="API Анкеты 2/5", version="1.0")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -50,7 +47,6 @@ app.add_middleware(
 )
 
 # SQLite
-
 def _ensure_db() -> None:
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -71,13 +67,11 @@ def _ensure_db() -> None:
 _ensure_db()
 
 # Google Sheets
-
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 SHEET_ID = os.getenv("SHEET_ID", "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA")
-SHEET_TAB = os.getenv("SHEET_TAB", "Ответы")
 
 credentials: Optional[Credentials] = None
 gc: Optional[gspread.Client] = None
@@ -89,7 +83,7 @@ def _build_gspread_session() -> requests.Session:
     return s
 
 def _authorize_gspread() -> Optional[gspread.Client]:
-    """Авторизация сервис-аккаунтом; хранит клиента в gc."""
+    """Авторизация сервис-аккаунтом (файл/ENV)."""
     global credentials, gc
     try:
         creds_json = os.getenv("GOOGLE_CREDENTIALS")
@@ -105,8 +99,11 @@ def _authorize_gspread() -> Optional[gspread.Client]:
         logger.error(f"❌ Авторизация gspread провалена: {e}")
         return None
 
-def get_sheet() -> Optional[gspread.Worksheet]:
-    """Возвращает рабочий лист: сначала нужную вкладку, иначе первую существующую."""
+def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
+    """
+    Всегда используем ПЕРВЫЙ лист книги (gid=0 или фактически первый).
+    Если книга пуста — создаём лист с заголовком.
+    """
     global credentials, gc, worksheet
     try:
         if not gc and not _authorize_gspread():
@@ -116,33 +113,27 @@ def get_sheet() -> Optional[gspread.Worksheet]:
             credentials.refresh(GoogleRequest())
             logger.info("🔑 Google token обновлён")
 
-        if worksheet:
-            return worksheet
-
         sh = gc.open_by_key(SHEET_ID)
-        try:
-            worksheet = sh.worksheet(SHEET_TAB)
-        except gspread.WorksheetNotFound:
-
-            existing = sh.worksheets()
-            if existing:
-                worksheet = existing[0]
-                logger.info(f"ℹ️ Вкладка '{SHEET_TAB}' не найдена, используем первую: '{worksheet.title}'")
-            else:
-
-                worksheet = sh.add_worksheet(title=SHEET_TAB, rows=1000, cols=10)
-                worksheet.append_row(
-                    ["username", "question", "answer", "created_at"],
-                    value_input_option="USER_ENTERED",
-                )
-                logger.info(f"🆕 Создан лист '{SHEET_TAB}'")
+        tabs = sh.worksheets()
+        if not tabs:
+            worksheet = sh.add_worksheet(title="Ответы", rows=1000, cols=10)
+            worksheet.append_row(["username", "question", "answer", "created_at"], value_input_option="USER_ENTERED")
+            logger.info("🆕 Создан первый лист 'Ответы'")
+        else:
+            worksheet = tabs[0]
+            # заголовок
+            try:
+                has_values = bool(worksheet.get_all_values())
+            except Exception:
+                has_values = False
+            if not has_values:
+                worksheet.append_row(["username", "question", "answer", "created_at"], value_input_option="USER_ENTERED")
         return worksheet
     except Exception as e:
-        logger.error(f"❌ Ошибка get_sheet: {e}")
+        logger.error(f"❌ Ошибка get_sheet_first_tab: {e}")
         return None
 
 # API
-
 @app.post("/submit")
 async def submit_answers(
     username: str = Form(...),
@@ -150,7 +141,10 @@ async def submit_answers(
     photo: UploadFile = File(None),
     photos: List[UploadFile] = File(default=[]),
 ):
-    """Сохраняет в SQLite и (по возможности) в Google Sheets; возвращает диагностику."""
+    """
+    Сохраняет ответы: SQLite (всегда) + Google Sheets (по возможности, первый лист).
+    Возвращает диагностику: sheets_ok, sheets_error, tab_used.
+    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
@@ -172,15 +166,15 @@ async def submit_answers(
         conn.commit()
         conn.close()
 
-        # Google Sheets
+        # Google Sheets (первый лист)
         sheets_ok = False
         sheets_error = None
-        used_tab = None
+        tab_used = None
 
-        ws = get_sheet()
+        ws = get_sheet_first_tab()
         if ws:
             try:
-                used_tab = ws.title
+                tab_used = ws.title
                 rows_for_sheet = [
                     [username, item.get("question", ""), item.get("answer", ""), now]
                     for item in parsed
@@ -192,7 +186,7 @@ async def submit_answers(
                 sheets_error = str(e)
                 logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
         else:
-            sheets_error = "gspread client/worksheet unavailable"
+            sheets_error = "gspread worksheet unavailable"
 
         return {
             "status": "ok",
@@ -200,7 +194,7 @@ async def submit_answers(
             "sheets_ok": sheets_ok,
             "sheets_error": sheets_error,
             "sheet_id": SHEET_ID,
-            "tab_used": used_tab or SHEET_TAB,
+            "tab_used": tab_used,
         }
 
     except Exception as e:
@@ -209,16 +203,12 @@ async def submit_answers(
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
-    ws = get_sheet()
-    return {
-        "status": "ok" if ws else "fail",
-        "sheet": SHEET_ID,
-        "tab": ws.title if ws else SHEET_TAB,
-    }
+    ws = get_sheet_first_tab()
+    return {"status": "ok" if ws else "fail", "sheet": SHEET_ID, "tab": ws.title if ws else None}
 
 @app.get("/whoami", include_in_schema=False)
 def whoami():
-    """Почта сервис-аккаунта — чтобы выдать доступ к таблице (Редактор)."""
+    """Почта сервис-аккаунта (нужно дать ей доступ Редактора в таблице)."""
     try:
         creds_json = os.getenv("GOOGLE_CREDENTIALS")
         info = json.loads(creds_json) if creds_json else json.load(open(CREDENTIALS_PATH, "r", encoding="utf-8"))
@@ -228,10 +218,10 @@ def whoami():
 
 @app.post("/debug/google", include_in_schema=False)
 def debug_google():
-    """Пробная запись строки в текущую вкладку (для быстрой проверки)."""
-    ws = get_sheet()
+    """Пробная запись в первый лист для быстрой проверки доступа."""
+    ws = get_sheet_first_tab()
     if not ws:
-        return {"sheets_ok": False, "error": "no worksheet (auth or access failed)"}
+        return {"sheets_ok": False, "error": "no worksheet (auth/access failed)"}
     try:
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ws.append_row(["_debug_", "ping", "ok", now], value_input_option="USER_ENTERED")
@@ -239,8 +229,7 @@ def debug_google():
     except Exception as e:
         return {"sheets_ok": False, "error": str(e), "tab": ws.title}
 
-# фронтенд
-
+#  Фронтенд 
 FRONTEND_DIR = os.path.normpath(os.path.join(BASE_DIR, "../frontend"))
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
@@ -285,4 +274,3 @@ async def catch_all(full_path: str):
     if os.path.isfile(path):
         return FileResponse(path)
     return _safe_file_response(INDEX_FILE)
-
