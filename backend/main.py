@@ -32,6 +32,59 @@ os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 # --- FastAPI ---
 app = FastAPI(title="API Анкеты для 2/5", version="1.0")
 
+# --- API ---
+from fastapi import Form, File, UploadFile, HTTPException
+from typing import List
+from datetime import datetime
+import json
+
+
+@app.post("/submit")
+async def submit_answers(
+    username: str = Form(...),
+    answers: str = Form(...),
+    photo: UploadFile = File(None),
+    photos: List[UploadFile] = File(default=[])
+):
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    try:
+        parsed_answers = json.loads(answers)
+        saved_answers = []
+
+        for item in parsed_answers:
+            cursor.execute(
+                "INSERT INTO answers (username, question, answer, created_at) VALUES (?, ?, ?, ?)",
+                (username, item["question"], item["answer"], now)
+            )
+
+            current_sheet = get_sheet()
+            if current_sheet:
+                try:
+                    current_sheet.append_row([username, item["question"], item["answer"], now])
+                except Exception as e:
+                    logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
+
+            saved_answers.append({
+                "username": username,
+                "question": item["question"],
+                "answer": item["answer"],
+                "created_at": now
+            })
+
+        conn.commit()
+        return {"status": "ok", "saved": saved_answers}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка при сохранении: {e}")
+
+
+# --- Health check ---
+@app.get("/healthz", include_in_schema=False)
+def healthz():
+    return {"status": "ok"}
+
+
 # --- CORS ---
 app.add_middleware(
     CORSMiddleware,
@@ -40,14 +93,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# --- API Token для авторизации ---
-API_TOKEN = os.getenv("API_TOKEN")
-
-def check_token(authorization: str = Header(...)):
-    expected = f"Bearer {API_TOKEN}"
-    if authorization != expected:
-        raise HTTPException(status_code=403, detail="Forbidden")
 
 # --- SQLite ---
 conn = sqlite3.connect("tests.db", check_same_thread=False)
@@ -121,62 +166,11 @@ class AnswerBatch(BaseModel):
     username: str
     answers: List[Answer]
 
-# --- API ---
-@app.post("/submit")
-def submit_answers(data: AnswerBatch):
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    saved_answers = []
-
-    try:
-        for ans in data.answers:
-            cursor.execute(
-                "INSERT INTO answers (username, question, answer, created_at) VALUES (?, ?, ?, ?)",
-                (data.username, ans.question, ans.answer, now)
-            )
-
-            current_sheet = get_sheet()
-            if current_sheet:
-                try:
-                    current_sheet.append_row([data.username, ans.question, ans.answer, now])
-                except Exception as e:
-                    logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
-
-            saved_answers.append({
-                "username": data.username,
-                "question": ans.question,
-                "answer": ans.answer,
-                "created_at": now
-            })
-
-        conn.commit()
-        return {"status": "ok", "saved": saved_answers}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ошибка сохранения: {e}")
-
-@app.get("/results")
-def get_results(_: str = Depends(check_token)):
-    cursor.execute("SELECT username, question, answer, created_at FROM answers ORDER BY created_at DESC")
-    rows = cursor.fetchall()
-    return {
-        "results": [
-            {"username": row[0], "question": row[1], "answer": row[2], "created_at": row[3]}
-            for row in rows
-        ]
-    }
-
-@app.get("/healthz")
-def health_check():
-    return {"status": "ok"}
-
 # --- Фронтенд ---
-import os
-from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.responses import Response
 
-# --- Инициализация приложения ---
-app = FastAPI()
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "../frontend")
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
@@ -187,7 +181,6 @@ class StaticFilesCache(StaticFiles):
         resp.headers.setdefault("Cache-Control", "public, max-age=86400")
         return resp
 
-# --- Подключение статики ---
 static_folders = ["assets", "css", "js", "fonts", "audio"]
 
 for folder in static_folders:
@@ -196,40 +189,34 @@ for folder in static_folders:
         mount_cls = StaticFilesCache if folder == "assets" else StaticFiles
         app.mount(f"/{folder}", mount_cls(directory=folder_path), name=folder)
 
-# --- Favicon ---
 favicon_path = os.path.join(FRONTEND_DIR, "assets", "favicons", "favicon.ico")
 if os.path.exists(favicon_path):
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
         return FileResponse(favicon_path)
 
-# --- HTML страницы ---
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_index():
     return FileResponse(INDEX_FILE, media_type="text/html")
-
 
 @app.api_route("/profile.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_profile():
     return FileResponse(os.path.join(FRONTEND_DIR, "profile.html"), media_type="text/html")
 
-
 @app.api_route("/processing.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_processing():
     return FileResponse(os.path.join(FRONTEND_DIR, "processing.html"), media_type="text/html")
 
-# --- SPA ---
 @app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
     safe_path = os.path.normpath(os.path.join(FRONTEND_DIR, full_path))
     frontend_abs = os.path.abspath(FRONTEND_DIR)
 
-    # Защита
     if not safe_path.startswith(frontend_abs):
         return FileResponse(INDEX_FILE, media_type="text/html")
 
     if os.path.exists(safe_path) and os.path.isfile(safe_path):
         return FileResponse(safe_path)
 
-    # Fallback на index.html
     return FileResponse(INDEX_FILE, media_type="text/html")
+

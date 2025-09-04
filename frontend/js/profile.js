@@ -22,7 +22,7 @@ function fadeOut(el, cb) {
 function playSound(src) {
   const audio = new Audio(src);
   audio.currentTime = 0;
-  audio.play().catch(() => {});
+  audio.play().catch(() => { });
 }
 
 // Модальные окна
@@ -114,8 +114,8 @@ function renderQuestion(profile, idx, answers) {
                 <span>Нет</span>
               </label>
             </div>
-            <div class="profile-question__custom-block" style="display:${answers[idx] && !['yes','no'].includes(answers[idx]) ? '' : 'none'};">
-              <input type="text" class="profile-question__custom" placeholder="Напишите свой вариант..." value="${(!['yes','no',null].includes(answers[idx]) ? answers[idx] : '')}">
+            <div class="profile-question__custom-block" style="display:${answers[idx] && !['yes', 'no'].includes(answers[idx]) ? '' : 'none'};">
+              <input type="text" class="profile-question__custom" placeholder="Напишите свой вариант..." value="${(!['yes', 'no', null].includes(answers[idx]) ? answers[idx] : '')}">
             </div>
             <div class="profile-question__controls">
               ${idx === n - 1
@@ -173,9 +173,9 @@ function addQuestionListeners(profile, idx, answers) {
     if (submitBtn) submitBtn.disabled = false;
     customBlock.style.display = 'none';
   }
-  if (answers[idx] === 'no' || (answers[idx] && !['yes','no'].includes(answers[idx]))) {
+  if (answers[idx] === 'no' || (answers[idx] && !['yes', 'no'].includes(answers[idx]))) {
     customBlock.style.display = '';
-    if (answers[idx] && !['yes','no'].includes(answers[idx]) && answers[idx].length > 0) {
+    if (answers[idx] && !['yes', 'no'].includes(answers[idx]) && answers[idx].length > 0) {
       if (nextBtn) nextBtn.disabled = false;
       if (submitBtn) submitBtn.disabled = false;
     }
@@ -285,10 +285,11 @@ async function submitResults(profile, answers) {
       console.log(`${key}:`, value);
     }
 
-    const res = await fetch("/submit", {
+    const res = await fetch("https://personal-applications-2-5.onrender.com/submit", {
       method: "POST",
       body: formData
     });
+
 
     if (!res.ok) {
       const errorText = await res.text();
