@@ -267,7 +267,7 @@ async function submitResults(profile, answers) {
 
   try {
     console.log("📷 Подготовка фото...");
-    const photoPromise = preparePhotoBlobs(profile); // параллельно
+    const photoPromise = preparePhotoBlobs(profile);
 
     const blobs = await photoPromise;
     console.log("📷 Фото готовы:", blobs);
