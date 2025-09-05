@@ -24,7 +24,7 @@ function fadeOut(el, cb) {
 function playSound(src) {
   const audio = new Audio(src);
   audio.currentTime = 0;
-  audio.play().catch(() => {});
+  audio.play().catch(() => { });
 }
 
 // Модальные окна
@@ -92,7 +92,7 @@ function renderQuestion(profile, idx, answers) {
   const question = profile.questions[idx];
   const photo =
     (profile.photos && profile.photos[idx]) ? profile.photos[idx] :
-    (profile.photo || "");
+      (profile.photo || "");
 
   return `
     <div class="profile-question profile-question--${profile.theme}" style="opacity:0">
@@ -123,17 +123,16 @@ function renderQuestion(profile, idx, answers) {
               <input type="text" class="profile-question__custom" placeholder="Напишите свой вариант..." value="${(!['yes', 'no', null].includes(answers[idx]) ? answers[idx] : '')}">
             </div>
             <div class="profile-question__controls">
-              ${
-                idx === n - 1
-                  ? `
+              ${idx === n - 1
+      ? `
                     <button type="button" class="profile-question__prev">Предыдущий</button>
                     <button type="submit" class="profile-question__submit" disabled>Отправить</button>
                   `
-                  : `
+      : `
                     <button type="button" class="profile-question__prev"${idx === 0 ? " disabled" : ""}>Предыдущий</button>
                     <button type="submit" class="profile-question__next" disabled>Следующий</button>
                   `
-              }
+    }
             </div>
           </form>
         </div>
@@ -180,7 +179,6 @@ function addQuestionListeners(profile, idx, answers) {
 
   let submitted = false; // защита от двойной отправки
 
-  // Состояние при загрузке
   const currentAnswer = answers[idx];
   if (currentAnswer === "yes") {
     customBlock.style.display = "none";
@@ -237,7 +235,7 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
-  // Сабмит формы (ВАЖНО: дожидаемся отправки → потом редирект)
+  // Сабмит формы
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     if (submitted) return;
@@ -258,26 +256,38 @@ function addQuestionListeners(profile, idx, answers) {
       showQuestion(profile, idx + 1, answers);
       submitted = false;
     } else {
-      playSound("audio/send.mp3");
-      // НЕ делаем window.location.href до завершения submitResults!
-      const ok = await submitResults(profile, answers);
-      if (ok) {
-        localStorage.removeItem(`progress_${profile.caption}`);
-        localStorage.setItem("test_finished", "true");
-        window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
-      } else {
-        submitted = false; // позволим попробовать снова
-      }
+   
+      const audio = new Audio("audio/send.mp3");
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+
+      // Запуск отправки параллельно
+      const sending = submitResults(profile, answers);
+
+      const finish = async () => {
+        const ok = await sending;
+        if (ok) {
+          localStorage.removeItem(`progress_${profile.caption}`);
+          localStorage.setItem("test_finished", "true");
+          window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
+        } else {
+          submitted = false;
+        }
+      };
+
+      // (подстраховка для Safari/iOS)
+      audio.onended = finish;
+      setTimeout(finish, (audio.duration || 2) * 1000 + 500);
     }
   });
 }
 
-// Заглушка для preparePhotoBlobs, если фото не нужны
-async function preparePhotoBlobs(/* profile */) {
+// Заглушка для preparePhotoBlobs
+async function preparePhotoBlobs() {
   return { photo: null, photos: [] };
 }
 
-// Отправка результатов (с фотографиями)
+// Отправка результатов
 async function submitResults(profile, answers) {
   try {
     const formData = new FormData();
@@ -302,7 +312,7 @@ async function submitResults(profile, answers) {
     const res = await fetch("https://personal-applications-2-5.onrender.com/submit", {
       method: "POST",
       body: formData,
-      keepalive: true, // на случай внезапных уходов со страницы
+      keepalive: true,
     });
 
     if (!res.ok) {
@@ -328,15 +338,14 @@ async function submitResults(profile, answers) {
   }
 }
 
-// Получаем имя пользователя из URL
+// Получаем данные
 const params = new URLSearchParams(window.location.search);
 const username = params.get("name") || "Аноним";
 
-// После завершения теста вызываем эту функцию
 async function submitAnswers(answers) {
   const formData = new FormData();
   formData.append("username", username);
-  formData.append("answers", JSON.stringify(answers)); // [{question: "...", answer: "..."}]
+  formData.append("answers", JSON.stringify(answers));
 
   try {
     const response = await fetch("https://personal-applications-2-5.onrender.com/submit", {
@@ -418,7 +427,7 @@ function spawnBubbles(container) {
       );
       bubble.style.animationName = animName;
     } catch {
-      // без динамического ключфрейма — не критично
+
     }
 
     container.appendChild(bubble);

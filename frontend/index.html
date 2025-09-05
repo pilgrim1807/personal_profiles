@@ -113,13 +113,24 @@
   <script defer src="js/index.js"></script>
   <script defer src="js/profiles.js"></script>
 
-  <div id="sound-warning" class="sound-warning">
-    <div class="sound-warning__box">
-      <p>🔊 Тест будет со звуковыми эффектами.<br>
-        Пожалуйста, включи звук!</p>
-      <button id="sound-continue">Продолжить</button>
+<div id="sound-warning" class="sound-warning">
+  <div class="flash-overlay"></div>
+  <div class="sound-warning__box polaroid-photo">
+    <button id="sound-close" class="sound-warning__close" aria-label="Закрыть">&times;</button>
+    <div class="sound-warning__content">
+      <h2>Перед началом</h2>
+      <p>
+        Проходя тест, <span>не пишите просто «нет»</span>. <br>
+        Постарайтесь <em>кратко объяснить</em>, почему.  
+      </p>
+      <p>
+        <strong>Это поможет составить более точную характеристику</strong>.
+      </p>
     </div>
+    <button id="sound-continue">Продолжить</button>
   </div>
+</div>
+
 </body>
 
 </html>

@@ -1,4 +1,4 @@
-// Данные профилей с webp + jpg
+// Данные профилей
 const PROFILES = [
   { name: "Сергей", jpg: "assets/names/sergey.jpg", webp: "assets/names/sergey.webp", className: "sergey" },
   { name: "Андрей", jpg: "assets/names/andrey.jpg", webp: "assets/names/andrey.webp", className: "andrey" },
@@ -32,27 +32,79 @@ function renderProfiles() {
   initSoundWarning();
 }
 
-// Модальное окно (звук)
+// Звуки
+const flashSound = new Audio("audio/flash.mp3");
+flashSound.preload = "auto";
+
+const ejectSound = new Audio("audio/photo-out.mp3");
+ejectSound.preload = "auto";
+
+// Модальное окно
+
 function initSoundWarning() {
   const warning = document.getElementById("sound-warning");
+  const box = warning.querySelector(".sound-warning__box.polaroid-photo");
+  const flash = document.querySelector(".flash-overlay");
   const continueBtn = document.getElementById("sound-continue");
+  const closeBtn = document.getElementById("sound-close");
+
   let targetName = null;
 
   document.querySelectorAll(".profiles-list__item").forEach((button) => {
     const name = button.querySelector(".profile-card__caption")?.textContent?.trim();
-    if (name) {
-      button.addEventListener("click", (e) => {
-        e.preventDefault();
-        targetName = name;
-        warning.classList.add("active");
-      });
+    if (!name) return;
+
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      targetName = name;
+
+      // Активируем фон модалки
+      warning.classList.add("active");
+
+      // Вспышка + звук
+      flash.classList.add("active");
+      flashSound.currentTime = 0;
+      flashSound.play().catch(() => {});
+      setTimeout(() => flash.classList.remove("active"), 1000);
+
+      // Пауза после вспышки → затем выезд фото
+      setTimeout(() => {
+        ejectSound.currentTime = 0;
+        ejectSound.play().catch(() => {});
+
+        box.classList.add("show");
+      }, 800); // пауза 0.8s (можно увеличить/уменьшить)
+    });
+  });
+
+  // Кнопка "Продолжить"
+  continueBtn?.addEventListener("click", () => {
+    warning.classList.remove("active");
+    box.classList.remove("show");
+    if (targetName) {
+      window.location.href = `profile.html?name=${encodeURIComponent(targetName)}`;
     }
   });
 
-  continueBtn?.addEventListener("click", () => {
+  // Закрыть по крестику
+  closeBtn?.addEventListener("click", () => {
     warning.classList.remove("active");
-    if (targetName) {
-      window.location.href = `profile.html?name=${encodeURIComponent(targetName)}`;
+    box.classList.remove("show");
+  });
+
+  // Клик по фону
+  warning?.addEventListener("click", (e) => {
+    if (e.target === warning) {
+      warning.classList.remove("active");
+      box.classList.remove("show");
+    }
+  });
+
+  // ESC
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      warning.classList.remove("active");
+      box.classList.remove("show");
     }
   });
 }

@@ -30,7 +30,7 @@ body {
 }
 
 
-/* Обертка */
+/* контейнер */
 .main-wrapper {
   max-width: 90vw;
   margin: 0 auto;
@@ -40,7 +40,6 @@ body {
   transition: background 0.2s;
 }
 
-/* header */
 .main__header {
   margin: 0 0 2rem;
   padding-top: 0.5rem;
@@ -208,7 +207,6 @@ body {
     2px 2px 0 #d6b86c33;
 }
 
-/* footer */
 .footer {
   font-family: 'Monrope', sans-serif;
   text-align: center;
@@ -266,54 +264,170 @@ body.dark .footer {
 }
 
 /* Модальное окно */
+
+/*  Фон */
 .sound-warning {
   position: fixed;
   inset: 0;
   display: none;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.65);
+  background: rgba(5, 5, 8, 0.92);
+  backdrop-filter: blur(6px);
   z-index: 2000;
+  overflow: hidden;
 }
 
-.sound-warning.active {
-  display: flex;
+.sound-warning.active { display: flex; }
+
+/* Вспышка */
+.flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 245, 1) 0%,
+    rgba(255, 255, 230, 0.9) 25%,
+    rgba(255, 255, 200, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3000;
+}
+.flash-overlay.active {
+  animation: flashRealistic 1s ease;
+}
+@keyframes flashRealistic {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  20%  { opacity: 0.85; }
+  35%  { opacity: 0.6; }
+  50%  { opacity: 0.8; }
+  70%  { opacity: 0.4; }
+  100% { opacity: 0; }
 }
 
-.sound-warning__box {
+/* Полароидная карточка  */
+.sound-warning__box.polaroid-photo {
+  position: relative;
   background: #fff;
-  padding: 26px 32px;
-  border-radius: 14px;
-  max-width: 420px;
+  border: clamp(6px, 1.5vw, 10px) solid #fff;
+  border-bottom: clamp(14px, 4vw, 40px) solid #fff;
+  padding: clamp(12px, 3vw, 20px);
+  border-radius: 4px;
+  max-width: min(90vw, 420px);
+  width: 100%;
   text-align: center;
-  box-shadow: 0 6px 26px rgba(0,0,0,0.35);
-  font-size: 1.1rem;
-  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  opacity: 0;
+  transform: translateY(100vh);
 }
 
-.sound-warning__box p {
-  margin: 0 0 18px;
+/* Выезд фото */
+.sound-warning__box.polaroid-photo.show {
+  animation: photoEject 2.5s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes photoEject {
+  0%   { opacity: 1; transform: translateY(100vh); }
+  70%  { opacity: 1; transform: translateY(-8vh) rotate(1deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(-2deg); }
+}
+
+/* Проявление контента  */
+.sound-warning__content,
+#sound-continue,
+.sound-warning__close {
+  opacity: 0;
+  filter: brightness(0) blur(6px);
+}
+
+.sound-warning__box.polaroid-photo.show .sound-warning__content,
+.sound-warning__box.polaroid-photo.show #sound-continue,
+.sound-warning__box.polaroid-photo.show .sound-warning__close {
+  animation: developPhoto 2s ease forwards;
+  animation-delay: 2.6s;
+}
+
+@keyframes developPhoto {
+  from { opacity: 0; filter: brightness(0) blur(6px); }
+  to   { opacity: 1; filter: brightness(1) blur(0); }
+}
+
+/*  Контент  */
+.sound-warning__content {
+  text-align: center;
+  line-height: 1.55;
+  word-break: break-word;
+  hyphens: auto;
+}
+.sound-warning__content h2 {
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+.sound-warning__content p {
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  margin-bottom: 10px;
   color: #333;
 }
+.sound-warning__content span { font-weight: 600; color: #1d6d52; }
+.sound-warning__content em   { font-style: italic; color: #555; }
+.sound-warning__content strong { font-weight: 700; color: #000; }
 
+/*  Кнопка  */
 #sound-continue {
-  background: #8ebfad;
+  background: linear-gradient(135deg, #8ebfad, #6aa98e);
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 10px 22px;
-  font-size: 1rem;
+  border-radius: 6px;
+  padding: clamp(6px, 2vw, 10px) clamp(12px, 5vw, 20px);
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  margin-top: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
-
 #sound-continue:hover {
-  background: #6aa98e;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+/*  Крестик  */
+.sound-warning__close {
+  position: absolute;
+  top: clamp(4px, 2vw, 8px);
+  right: clamp(6px, 2vw, 12px);
+  background: transparent;
+  border: none;
+  font-size: clamp(1rem, 4vw, 1.4rem);
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.sound-warning__close:hover {
+  color: #000;
+  transform: rotate(90deg);
 }
 
 
+/*  Адаптация  */
+@media (max-width: 240px) {
+  .sound-warning__box.polaroid-photo {
+    max-width: 180px;
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+  #sound-continue {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+}
 
-/* ===== Медиа-запросы ===== */
+
+/*  Медиа-запросы  */
 
 @media (max-width: 1217px) {
   .profiles-wrapper {
@@ -458,10 +572,10 @@ body.dark .footer {
 
   .profiles-list {
     display: grid;
-    grid-template-columns: 1fr;  /* одна колонка */
-    justify-items: center;       /* центрируем карточки */
+    grid-template-columns: 1fr;
+    justify-items: center;
     row-gap: 50px;
-    padding: 0;                  /* убираем боковые отступы */
+    padding: 0;
   }
 
   .main__title {
@@ -474,7 +588,7 @@ body.dark .footer {
 
   .subtitle-row {
     gap: 0.1rem;
-    justify-content: center; /* тоже по центру */
+    justify-content: center;
   }
 
   .main__subtitle {

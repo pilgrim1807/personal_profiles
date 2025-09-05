@@ -1,14 +1,16 @@
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: "Manrope", sans-serif;
   background: linear-gradient(135deg, #2563eb, #9333ea);
   color: #fff;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   overflow: hidden;
+  text-align: center;
+  padding-top: 12vh;
 }
 
 main,
@@ -19,47 +21,53 @@ footer {
 
 .main-wrapper {
   background: rgba(0, 0, 0, 0.4);
-  padding: 40px 60px;
+  padding: clamp(20px, 5vw, 40px) clamp(16px, 6vw, 60px);
   border-radius: 16px;
   text-align: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  animation: fadeInScale 0.9s ease forwards;
+  animation: fadeInUp 1.2s ease forwards;
   position: relative;
   z-index: 2;
+  max-width: 90%;
+  margin: auto;
+  opacity: 0;
 }
 
-@keyframes fadeInScale {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: scale(0.9);
+    transform: translateY(50px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
 .main__title {
-  font-size: 2.5rem;
+  font-size: clamp(1.6rem, 5vw, 2.5rem);
   margin-bottom: 16px;
+  font-family: "Manrope-Semibold", sans-serif;
 }
 
 .main__subtitle {
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 3vw, 1.2rem);
   margin-bottom: 30px;
   opacity: 0.9;
+  font-family: "Manrope-Semibold", sans-serif;
 }
 
 .home-link {
   display: inline-block;
-  padding: 12px 28px;
+  padding: clamp(8px, 2vw, 12px) clamp(16px, 5vw, 28px);
   background: #fff;
   color: #2563eb;
   font-weight: bold;
   border-radius: 8px;
   text-decoration: none;
   transition: transform 0.2s, background 0.3s;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
 }
 
 .home-link:hover {
@@ -67,20 +75,17 @@ footer {
   transform: translateY(-3px);
 }
 
-.home-link:active {
-  transform: translateY(0);
-}
-
 .footer {
-  position: absolute;
-  bottom: 12px;
-  font-size: 0.85rem;
+  margin-top: auto;
+  padding: 16px 0;
+  font-size: clamp(0.7rem, 2.5vw, 0.9rem);
   color: rgba(255, 255, 255, 0.8);
-  text-align: center;
   max-width: 90%;
-  z-index: 2;
+  text-align: center;
 }
 
+
+/* Фон с пузырями  */
 .bubbles {
   position: fixed;
   inset: 0;
@@ -111,6 +116,7 @@ footer {
   }
 }
 
+/* Эффект лопанья пузыря */
 .bubble.pop {
   animation: popAnim 0.35s ease forwards;
 }
@@ -135,6 +141,7 @@ footer {
   }
 }
 
+/* Брызги */
 .splash {
   position: fixed;
   border-radius: 50%;
@@ -157,6 +164,7 @@ footer {
   }
 }
 
+/* Модальное окно в виде пузыря */
 .bubble-modal {
   position: fixed;
   inset: 0;
@@ -165,15 +173,17 @@ footer {
   justify-content: center;
   align-items: center;
   z-index: 3000;
+  padding: 5vw;
+  box-sizing: border-box;
 }
 
-/* Стеклянный пузырь */
+/* Стеклянный эффект у пузыря */
 .bubble-message {
   position: relative;
   border-radius: 50%;
-  width: 300px;
-  height: 300px;
-  padding: 30px;
+  width: clamp(160px, 80vw, 320px);
+  aspect-ratio: 1 / 1;
+  padding: clamp(10px, 5vw, 30px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -186,19 +196,32 @@ footer {
   box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5),
     inset 8px 10px 18px rgba(0, 0, 0, 0.2),
     0 0 30px rgba(170, 130, 255, 0.5);
-
   animation: bubblePulse 5s ease-in-out infinite,
-             floaty 6s ease-in-out infinite,
-             rainbowBorder 8s linear infinite;
+    floaty 6s ease-in-out infinite,
+    rainbowBorder 8s linear infinite;
 }
 
 /* Радужная анимация границы */
 @keyframes rainbowBorder {
-  0%   { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(0,100%,70%,0.4); }
-  25%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(200,100%,70%,0.5); }
-  50%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(300,100%,70%,0.5); }
-  75%  { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(120,100%,70%,0.5); }
-  100% { box-shadow: inset -10px -12px 22px rgba(255,255,255,0.5), inset 8px 10px 18px rgba(0,0,0,0.2), 0 0 25px hsla(0,100%,70%,0.4); }
+  0% {
+    box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5), inset 8px 10px 18px rgba(0, 0, 0, 0.2), 0 0 25px hsla(0, 100%, 70%, 0.4);
+  }
+
+  25% {
+    box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5), inset 8px 10px 18px rgba(0, 0, 0, 0.2), 0 0 25px hsla(200, 100%, 70%, 0.5);
+  }
+
+  50% {
+    box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5), inset 8px 10px 18px rgba(0, 0, 0, 0.2), 0 0 25px hsla(300, 100%, 70%, 0.5);
+  }
+
+  75% {
+    box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5), inset 8px 10px 18px rgba(0, 0, 0, 0.2), 0 0 25px hsla(120, 100%, 70%, 0.5);
+  }
+
+  100% {
+    box-shadow: inset -10px -12px 22px rgba(255, 255, 255, 0.5), inset 8px 10px 18px rgba(0, 0, 0, 0.2), 0 0 25px hsla(0, 100%, 70%, 0.4);
+  }
 }
 
 /* Блики */
@@ -207,8 +230,8 @@ footer {
   position: absolute;
   top: 15%;
   left: 25%;
-  width: 120px;
-  height: 60px;
+  width: 40%;
+  height: 20%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
   border-radius: 50%;
   transform: rotate(-20deg);
@@ -220,42 +243,81 @@ footer {
   position: absolute;
   bottom: 20%;
   right: 20%;
-  width: 80px;
-  height: 40px;
+  width: 25%;
+  height: 15%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
   border-radius: 50%;
   opacity: 0.4;
 }
 
-/*  Анимации пузыря */
+/* Анимации пузыря */
 @keyframes bubblePulse {
-  0%,100% { transform: scale(1); }
-  50%     { transform: scale(1.08); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
 }
+
 @keyframes floaty {
-  0%   { transform: translate(0,0) scale(1); }
-  25%  { transform: translate(-8px,-10px) scale(1.05); }
-  50%  { transform: translate(0,0) scale(1.12); }
-  75%  { transform: translate(8px,10px) scale(1.05); }
-  100% { transform: translate(0,0) scale(1); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate(-8px, -10px) scale(1.05);
+  }
+
+  50% {
+    transform: translate(0, 0) scale(1.12);
+  }
+
+  75% {
+    transform: translate(8px, 10px) scale(1.05);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
-/* Лопание модального пузыря*/
-.bubble-message.pop { animation: popAnim 0.5s ease forwards; }
+/* Лопание модального пузыря */
+.bubble-message.pop {
+  animation: popAnim 0.5s ease forwards;
+}
+
 @keyframes popAnim {
-  0%   { transform: scale(1); opacity: 1; filter: blur(0); }
-  50%  { transform: scale(1.2); opacity: 0.8; filter: blur(2px); }
-  100% { transform: scale(0.3); opacity: 0; filter: blur(6px); }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+    filter: blur(2px);
+  }
+
+  100% {
+    transform: scale(0.3);
+    opacity: 0;
+    filter: blur(6px);
+  }
 }
 
-/* SVG-текст */
+/*  SVG-текст  */
 .bubble-text {
   width: 100%;
   height: 100%;
 }
 
 text {
-  font-family: 'Arial', sans-serif;
+  font-family: 'Pacifico-Pro', sans-serif;
   font-weight: bold;
   letter-spacing: 1px;
 }
@@ -264,31 +326,36 @@ text {
 .emoji {
   fill: url(#grad);
   animation: textDepthSync 6s ease-in-out infinite,
-             flicker 4s ease-in-out infinite;
+    flicker 4s ease-in-out infinite;
   transform-origin: center center;
 }
 
 .emoji {
   fill: #fff;
-  filter: drop-shadow(0 0 6px rgba(255,255,255,0.9));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
 }
 
 @keyframes textDepthSync {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(0.95);
     filter: brightness(1.5) contrast(0.8);
     opacity: 0.7;
   }
+
   25% {
     transform: scale(1.08);
     filter: brightness(1.2) contrast(1.0);
     opacity: 0.85;
   }
+
   50% {
     transform: scale(1.15);
     filter: brightness(0.9) contrast(1.4);
     opacity: 1;
   }
+
   75% {
     transform: scale(1.08);
     filter: brightness(1.2) contrast(1.0);
@@ -296,8 +363,40 @@ text {
   }
 }
 
-/* Мягкое мерцание текста */
+/* Мерцание текста */
 @keyframes flicker {
-  0%, 100% { text-shadow: 0 0 3px rgba(200, 200, 255, 0.25); }
-  50%      { text-shadow: 0 0 9px rgba(230, 214, 252, 0.4); }
+
+  0%,
+  100% {
+    text-shadow: 0 0 3px rgba(200, 200, 255, 0.25);
+  }
+
+  50% {
+    text-shadow: 0 0 9px rgba(230, 214, 252, 0.4);
+  }
+}
+
+/* Адаптация для очень маленьких экранов  */
+@media (max-width: 320px) {
+  .main-wrapper {
+    padding: 16px;
+  }
+
+  .bubble-message {
+    width: 90vw;
+    aspect-ratio: 1/1;
+    padding: 10px;
+  }
+
+  .main__title {
+    font-size: 1.2rem;
+  }
+
+  .main__subtitle {
+    font-size: 0.85rem;
+  }
+
+  .footer {
+    font-size: 0.7rem;
+  }
 }

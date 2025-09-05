@@ -16,13 +16,15 @@ function createBubble() {
   const hue = Math.floor(Math.random() * 360);
   bubble.style.setProperty("--hue", hue);
 
-  bubble.addEventListener("click", (event) => {
+  // универсальная функция для лопанья
+  function popBubble(event) {
+    if (bubble.classList.contains("pop")) return;
     bubble.classList.add("pop");
     popSound.currentTime = 0;
     popSound.play();
 
-    const centerX = event.clientX;
-    const centerY = event.clientY;
+    const centerX = event.touches ? event.touches[0].clientX : event.clientX;
+    const centerY = event.touches ? event.touches[0].clientY : event.clientY;
 
     const splashCount = Math.floor(size / 6);
     for (let i = 0; i < splashCount; i++) {
@@ -30,7 +32,15 @@ function createBubble() {
     }
 
     bubble.addEventListener("animationend", () => bubble.remove());
-  });
+  }
+
+  // поддержка и клика, и тапа
+  bubble.addEventListener("click", popBubble);
+  bubble.addEventListener("touchstart", popBubble, { passive: true });
+
+  // увеличить хитбокс для пальца
+  bubble.style.padding = "10px";
+  bubble.style.boxSizing = "content-box";
 
   bubblesContainer.appendChild(bubble);
 }
