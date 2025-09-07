@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Психологические портреты участников 2/5</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <meta name="description"
+    content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.">
+  <meta name="keywords"
+    content="онлайн тест, психология, профили, личность, саморазвитие, тестирование, характер, анкета">
+  <meta name="author" content="Языкова Анастасия">
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://personal-applications-2-5.onrender.com/">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="assets/favicons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicons/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicons/apple-touch-icon.png">
+  <meta name="msapplication-TileColor" content="#2563eb">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Психологические портреты участников 2/5">
+  <meta property="og:description"
+    content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.">
+  <meta property="og:url" content="https://personal-applications-2-5.onrender.com/index.html">
+  <meta name="twitter:image"
+    content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.png">
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ПсихоТест">
+
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Психологические портреты участников 2/5",
+      "description": "Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.",
+      "author": {
+        "@type": "Person",
+        "name": "Анастасия Языкова"
+      },
+      "datePublished": "2025-09-02",
+      "url": "https://personal-applications-2-5.onrender.com/index.html"
+    }
+  </script>
+
+  <!-- Preload Fonts -->
+  <link rel="preload" href="fonts/PermanentMarker.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="fonts/PermanentMarker.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Pacifico-Pro.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Pacifico-Pro.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Manrope.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Manrope.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Manrope-Semibold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Manrope-Semibold.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Caveat-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="fonts/Caveat-Bold.woff" as="font" type="font/woff" crossorigin="anonymous">
+
+  <!-- Preload фотографий (WebP) -->
+  <link rel="preload" as="image" href="assets/names/sergey.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/andrey.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/sonya.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/valera.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="assets/names/vovaha.webp" fetchpriority="high">
+
+  <link rel="preload" as="audio" href="audio/projector_on.mp3">
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest-index.json">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/fonts.css">
+</head>
+
+<body class="page">
+  <main class="main main-wrapper">
+    <header class="main__header">
+      <div class="header-text-wrapper">
+        <h1 class="main__title">Психологические портреты участников 2/5</h1>
+        <div class="subtitle-row">
+          <p class="main__subtitle">Выбери себя</p>
+          <button id="themeToggle" class="theme-toggle" aria-label="Сменить тему">🌗</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="profiles-wrapper">
+      <!-- Динамическая вставка карточек -->
+      <section class="profiles-list" id="profiles-list" aria-label="Список профилей"></section>
+    </div>
+  </main>
+
+  <footer class="footer">
+
+  <div class="bubble-container">
+    <button id="bubble-btn" class="bubble-download visible">
+      <span class="bubble-icon">📥</span>
+    </button>
+
+    <div id="token-wrapper">
+      <input id="token-input" type="text" placeholder="Введите токен" />
+    </div>
+  </div>
+
+    <p class="footer__note">
+      Тест нужен, чтобы убедиться, что мы правильно проанализировали данные о вас и составили достоверные
+      психологические портреты.
+    </p>
+  </footer>
+
+  <script defer src="js/index.js"></script>
+  <script defer src="js/profiles.js"></script>
+
+  <div id="sound-warning" class="sound-warning">
+    <div class="flash-overlay"></div>
+    <div class="sound-warning__box polaroid-photo">
+      <button id="sound-close" class="sound-warning__close" aria-label="Закрыть">&times;</button>
+      <div class="sound-warning__content">
+        <h2>Перед началом</h2>
+        <p>
+          Проходя тест, <span>не пишите просто «нет»</span>. <br>
+          Постарайтесь <em>кратко объяснить</em>, почему.
+        </p>
+        <p>
+          <strong>Это поможет составить более точную характеристику</strong>.
+        </p>
+      </div>
+      <button id="sound-continue">Продолжить</button>
+    </div>
+  </div>
+
+</body>
+
+</html>

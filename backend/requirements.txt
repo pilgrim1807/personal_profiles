@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+requests
+gspread
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+certifi
+python-multipart

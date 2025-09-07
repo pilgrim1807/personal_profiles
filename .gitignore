@@ -1,0 +1,27 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+backend/venv/
+
+# Databases and credentials
+*.db
+*.log
+backend/tests.db
+backend/credentials.json
+.env
+
+# OS junk
+.DS_Store
+Thumbs.db
+.~lock.*
+
+# Node
+node_modules/
+dist/
+build/
+backend/.env
