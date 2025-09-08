@@ -28,12 +28,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 os.environ["SSL_CERT_FILE"] = certifi.where()
 os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
 DB_PATH = os.getenv("DB_PATH", os.path.join(BASE_DIR, "tests.db"))
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "sekret123")
-
 
 app = FastAPI(title="API Анкеты 2/5", version="1.0")
 app.add_middleware(
@@ -49,6 +47,7 @@ allow_credentials=True,
 allow_methods=["*"],
 allow_headers=["*"],
 )
+
 
 # SQLite
 def _ensure_db() -> None:
@@ -68,7 +67,9 @@ def _ensure_db() -> None:
     conn.commit()
     conn.close()
 
+
 _ensure_db()
+
 
 # HTML просмотр ответов (с авторизацией по токену)
 @app.get("/answers", response_class=HTMLResponse)
@@ -92,6 +93,7 @@ def view_answers(request: Request):
     html += "</table></body></html>"
     return HTMLResponse(content=html)
 
+
 # CSV экспорт ответов (с авторизацией по токену)
 @app.get("/answers.csv")
 def export_answers_csv(request: Request):
@@ -112,6 +114,7 @@ def export_answers_csv(request: Request):
 
     return StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
 
+
 # Google Sheets
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -123,10 +126,12 @@ credentials: Optional[Credentials] = None
 gc: Optional[gspread.Client] = None
 worksheet: Optional[gspread.Worksheet] = None
 
+
 def _build_gspread_session() -> requests.Session:
     s = requests.Session()
     s.verify = certifi.where()
     return s
+
 
 def _authorize_gspread() -> Optional[gspread.Client]:
     """Авторизация сервис-аккаунтом (файл/ENV)."""
@@ -145,6 +150,7 @@ def _authorize_gspread() -> Optional[gspread.Client]:
         logger.error(f"❌ Авторизация gspread провалена: {e}")
         return None
 
+
 def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
     """
     Всегда используем ПЕРВЫЙ лист книги (gid=0 или фактически первый).
@@ -157,6 +163,8 @@ def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
 
         if credentials and getattr(credentials, "expired", False):
             credentials.refresh(GoogleRequest())
+            gc = gspread.authorize(credentials)
+            gc.session = _build_gspread_session()
             logger.info("🔑 Google token обновлён")
 
         sh = gc.open_by_key(SHEET_ID)
@@ -167,7 +175,6 @@ def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
             logger.info("🆕 Создан первый лист 'Ответы'")
         else:
             worksheet = tabs[0]
-            # заголовок
             try:
                 has_values = bool(worksheet.get_all_values())
             except Exception:
@@ -178,6 +185,7 @@ def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
     except Exception as e:
         logger.error(f"❌ Ошибка get_sheet_first_tab: {e}")
         return None
+
 
 # API
 @app.post("/submit")
@@ -208,6 +216,7 @@ async def submit_answers(
         conn.commit()
         conn.close()
 
+        # Google Sheets запись
         sheets_ok = False
         sheets_error = None
         tab_used = None
@@ -216,35 +225,32 @@ async def submit_answers(
         if ws:
             try:
                 tab_used = ws.title
-                existing = ws.get_all_values()
-                questions = [item.get("question", f"Q{i+1}") for i, item in enumerate(parsed)]
-                answers_list = [item.get("answer", "") for item in parsed]
-                col_index = len(existing[0]) + 1 if existing and existing[0] else 2
+                col = find_next_available_column(ws)
+                ws.update_cell(1, col, username)
+                ws.update_cell(2, col, now)
 
-                # Вставка имени и времени
-                ws.update_cell(1, col_index, username)
-                ws.update_cell(2, col_index, now)
-
-                # Обновление вопросов
-                for i, q in enumerate(questions):
-                    row = i + 3
-                    if len(existing) < row or not (existing[row - 1][0] if len(existing[row - 1]) > 0 else "").strip():
-                        ws.update_cell(row, 1, q)
-
-                # Обновление ответов пакетно
                 updates = []
-                for i, ans in enumerate(answers_list):
-                    row = i + 3
-                    a = "да" if ans == "yes" else "нет" if ans == "no" else f"нет ({ans})" if ans else "нет"
-                    updates.append({
-                        "range": gspread.utils.rowcol_to_a1(row, col_index),
-                        "values": [[a]]
-                    })
+                for i, item in enumerate(parsed):
+                    question = item.get("question", f"Q{i+1}")
+                    raw_ans = item.get("answer", "")
+                    answer = (
+                        "да" if raw_ans == "yes"
+                        else "нет" if raw_ans == "no"
+                        else f"нет ({raw_ans})" if raw_ans
+                        else "нет"
+                    )
+                    row_q = 3 + i * 2
+                    row_a = row_q + 1
+                    updates.append({"range": rowcol_to_a1(row_q, col), "values": [[question]]})
+                    updates.append({"range": rowcol_to_a1(row_a, col), "values": [[answer]]})
 
                 if updates:
-                    ws.batch_update(updates)
+                    if not safe_batch_update(ws, updates):
+                        raise Exception("Ошибка при записи в таблицу")
 
                 sheets_ok = True
+                logger.info(f"✅ Данные {username} успешно записаны в колонку {col}")
+
             except Exception as e:
                 sheets_error = str(e)
                 logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
@@ -264,11 +270,33 @@ async def submit_answers(
         logger.exception("Ошибка при сохранении")
         raise HTTPException(status_code=500, detail=f"Ошибка при сохранении: {e}")
 
+def find_next_available_column(ws):
+    """Найти следующую свободную колонку в первой строке."""
+    values = ws.row_values(1)
+    return len(values) + 1
+
+
+def rowcol_to_a1(row, col):
+    """Преобразование координат строки/колонки в A1-формат (например, A2, B5 и т.д.)."""
+    from gspread.utils import rowcol_to_a1 as rca1
+    return rca1(row, col)
+
+
+def safe_batch_update(ws, updates):
+    """Безопасное обновление ячеек (batch update с логгированием ошибок)."""
+    try:
+        ws.batch_update([{"range": u["range"], "values": u["values"]} for u in updates])
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка при batch_update: {e}")
+        return False
+
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
     ws = get_sheet_first_tab()
     return {"status": "ok" if ws else "fail", "sheet": SHEET_ID, "tab": ws.title if ws else None}
+
 
 @app.get("/whoami", include_in_schema=False)
 def whoami():
@@ -279,6 +307,7 @@ def whoami():
         return {"client_email": info.get("client_email")}
     except Exception as e:
         return {"error": str(e)}
+
 
 @app.post("/debug/google", include_in_schema=False)
 def debug_google():
@@ -293,23 +322,29 @@ def debug_google():
     except Exception as e:
         return {"sheets_ok": False, "error": str(e), "tab": ws.title}
 
+
 #  Фронтенд 
 FRONTEND_DIR = os.path.normpath(os.path.join(BASE_DIR, "../frontend"))
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
+
 # Класс без кэширования
 class NoCacheStaticFiles(StaticFiles):
+
     def file_response(self, *args, **kwargs) -> Response:
         resp = super().file_response(*args, **kwargs)
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return resp
 
+
 # Класс с кэшем (для других ресурсов)
 class StaticFilesCache(StaticFiles):
+
     def file_response(self, *args, **kwargs) -> Response:
         resp = super().file_response(*args, **kwargs)
         resp.headers.setdefault("Cache-Control", "public, max-age=86400")
         return resp
+
 
 # Отдельно монтируем CSS и JS без кэша
 app.mount("/css", NoCacheStaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
@@ -321,29 +356,34 @@ for folder in ["assets", "fonts", "audio"]:
     if os.path.exists(path):
         app.mount(f"/{folder}", StaticFilesCache(directory=path), name=folder)
 
-
 favicon_path = os.path.join(FRONTEND_DIR, "assets", "favicons", "favicon.ico")
 if os.path.exists(favicon_path):
+
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
         return FileResponse(favicon_path)
+
 
 def _safe_file_response(path: str) -> FileResponse:
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Not found")
     return FileResponse(path, media_type="text/html")
 
+
 @app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_index():
     return _safe_file_response(INDEX_FILE)
+
 
 @app.api_route("/profile.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_profile():
     return _safe_file_response(os.path.join(FRONTEND_DIR, "profile.html"))
 
+
 @app.api_route("/processing.html", methods=["GET", "HEAD"], include_in_schema=False)
 async def serve_processing():
     return _safe_file_response(os.path.join(FRONTEND_DIR, "processing.html"))
+
 
 @app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def catch_all(full_path: str):
@@ -352,8 +392,9 @@ async def catch_all(full_path: str):
         return FileResponse(path)
     return _safe_file_response(INDEX_FILE)
 
+
 @app.post("/submit_token")
-def submit_token(data: dict = Body(...)):
+def submit_token(data: dict=Body(...)):
     token = data.get("token")
     if not token:
         raise HTTPException(status_code=400, detail="Token required")
