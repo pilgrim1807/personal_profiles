@@ -8,5 +8,7 @@ services:
     healthCheckPath: /healthz
     envVars:
       - key: PYTHONPATH
-        value: ./backend
+        value: backend
+
+
 
