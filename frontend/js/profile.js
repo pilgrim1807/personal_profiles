@@ -235,51 +235,53 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
-  // Сабмит формы
-  form.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (submitted) return;
-    submitted = true;
+// Сабмит формы
+form.addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  if (submitted) return;
+  submitted = true;
 
-    const val = form.answer.value;
-    if (val === "no" && !customInput.value.trim()) {
-      customInput.focus();
-      submitted = false;
-      return;
-    }
+  const val = form.answer.value;
+  if (val === "no" && !customInput.value.trim()) {
+    customInput.focus();
+    submitted = false;
+    return;
+  }
 
-    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-    saveProgress(profile.caption, idx, answers);
+  answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
+  saveProgress(profile.caption, idx, answers);
 
-    if (idx < n - 1) {
-      playSound("audio/projector.mp3");
-      showQuestion(profile, idx + 1, answers);
-      submitted = false;
-    } else {
-   
-      const audio = new Audio("audio/send.mp3");
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
+  if (idx < n - 1) {
+    playSound("audio/projector.mp3");
+    showQuestion(profile, idx + 1, answers);
+    submitted = false;
+  } else {
+    const sendSound = new Audio("audio/send.mp3");
+    sendSound.play().catch(() => {});
 
-      // Запуск отправки параллельно
-      const sending = submitResults(profile, answers);
+    // Отправка начнётся сразу
+    const sendingPromise = submitResults(profile, answers);
 
-      const finish = async () => {
-        const ok = await sending;
-        if (ok) {
-          localStorage.removeItem(`progress_${profile.caption}`);
-          localStorage.setItem("test_finished", "true");
-          window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
-        } else {
-          submitted = false;
-        }
-      };
+    // Когда звук закончится — перейти на следующую страницу
+    const goToProcessing = async () => {
+      const ok = await sendingPromise;
+      if (ok) {
+        localStorage.removeItem(`progress_${profile.caption}`);
+        localStorage.setItem("test_finished", "true");
+        window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
+      } else {
+        submitted = false;
+        alert("Ошибка при отправке. Попробуй снова.");
+      }
+    };
 
-      // (подстраховка для Safari/iOS)
-      audio.onended = finish;
-      setTimeout(finish, (audio.duration || 2) * 1000 + 500);
-    }
-  });
+    sendSound.onended = goToProcessing;
+
+    // Подстраховка: если звук не проигрался — перейти через 2.5 сек
+    setTimeout(goToProcessing, 2500);
+  }
+});
+
 }
 
 // Заглушка для preparePhotoBlobs
