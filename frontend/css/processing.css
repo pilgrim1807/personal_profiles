@@ -321,8 +321,9 @@ main {
 
 text {
   font-family: 'Pacifico-Pro', sans-serif;
-  font-weight: bold;
+  font-weight: lighter;
   letter-spacing: 1px;
+  font-style: italic;
 }
 
 .gradient-text,
