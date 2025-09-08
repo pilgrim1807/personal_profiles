@@ -9,3 +9,4 @@ services:
     envVars:
       - key: PYTHONPATH
         value: ./backend
+
