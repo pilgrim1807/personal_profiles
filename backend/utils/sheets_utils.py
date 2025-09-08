@@ -1,3 +1,4 @@
+import base64
 import os
 import json
 import logging
@@ -33,11 +34,13 @@ def _build_gspread_session() -> requests.Session:
 def _authorize_gspread() -> Optional[gspread.Client]:
     global credentials, gc
     try:
-        creds_json = os.getenv("GOOGLE_CREDENTIALS")
-        if creds_json:
-            credentials = Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPE)
+        creds_b64 = os.getenv("GOOGLE_CREDENTIALS")
+        if creds_b64:
+            decoded = base64.b64decode(creds_b64).decode("utf-8")
+            credentials = Credentials.from_service_account_info(json.loads(decoded), scopes=SCOPE)
         else:
             credentials = Credentials.from_service_account_file(CREDENTIALS_PATH, scopes=SCOPE)
+
         gc = gspread.authorize(credentials)
         gc.session = _build_gspread_session()
         logger.info("✅ gspread авторизован")
@@ -45,7 +48,6 @@ def _authorize_gspread() -> Optional[gspread.Client]:
     except Exception as e:
         logger.error(f"❌ Авторизация gspread провалена: {e}")
         return None
-
 
 def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
     global credentials, gc, worksheet
