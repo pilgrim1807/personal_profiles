@@ -9,7 +9,7 @@ import gspread
 import requests
 import urllib3
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Form, File, UploadFile, Request
+from fastapi import FastAPI, HTTPException, Form, File, UploadFile, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles

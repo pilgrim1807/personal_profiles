@@ -4,11 +4,11 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environments
+# Виртуальная среда
 venv/
 backend/venv/
 
-# Databases and credentials
+# Databases, credentials
 *.db
 *.log
 backend/tests.db
