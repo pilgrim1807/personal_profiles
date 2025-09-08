@@ -800,7 +800,7 @@ body.dark .footer {
   box-shadow: 0 0 12px rgba(167, 139, 250, 0.8);
 }
 
-/* Placeholder строго по центру */
+/* Placeholder */
 #token-input::placeholder {
   color: rgba(255, 255, 255, 0.6);
   font-style: italic;
@@ -856,7 +856,6 @@ body.dark .footer {
 
 /*  Адаптация */
 
-/* Экраны до 600px */
 @media (max-width: 600px) {
   .bubble-download { width: 64px; height: 64px; }
   .bubble-icon { font-size: 1.8rem; }
@@ -864,7 +863,6 @@ body.dark .footer {
   #token-input { font-size: 0.95rem; padding: 10px 14px; }
 }
 
-/* Экраны до 400px */
 @media (max-width: 400px) {
   .bubble-download { width: 56px; height: 56px; }
   .bubble-icon { font-size: 1.6rem; }
@@ -872,7 +870,6 @@ body.dark .footer {
   #token-input { font-size: 0.9rem; padding: 8px 12px; }
 }
 
-/* Экраны до 300px */
 @media (max-width: 300px) {
   .bubble-download { width: 50px; height: 50px; }
   .bubble-icon { font-size: 1.4rem; }
@@ -880,7 +877,6 @@ body.dark .footer {
   #token-input { font-size: 0.85rem; padding: 6px 10px; }
 }
 
-/* Экраны до 200px (ультра маленькие телефоны/умные часы) */
 @media (max-width: 200px) {
   .bubble-download { width: 42px; height: 42px; }
   .bubble-icon { font-size: 1.2rem; }
@@ -888,7 +884,6 @@ body.dark .footer {
   #token-input { font-size: 0.75rem; padding: 5px 8px; }
 }
 
-/* Адаптация под очень маленькие экраны */
 @media (max-width: 360px) {
   .bubble-download {
     width: 52px;

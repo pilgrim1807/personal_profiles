@@ -293,17 +293,30 @@ def debug_google():
 FRONTEND_DIR = os.path.normpath(os.path.join(BASE_DIR, "../frontend"))
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
 
+# Класс без кэширования
+class NoCacheStaticFiles(StaticFiles):
+    def file_response(self, *args, **kwargs) -> Response:
+        resp = super().file_response(*args, **kwargs)
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return resp
+
+# Класс с кэшем (для других ресурсов)
 class StaticFilesCache(StaticFiles):
     def file_response(self, *args, **kwargs) -> Response:
         resp = super().file_response(*args, **kwargs)
         resp.headers.setdefault("Cache-Control", "public, max-age=86400")
         return resp
 
-for folder in ["assets", "css", "js", "fonts", "audio"]:
+# Отдельно монтируем CSS и JS без кэша
+app.mount("/css", NoCacheStaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
+app.mount("/js", NoCacheStaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
+
+# Остальные папки с кэшем (assets, fonts, audio и т.п.)
+for folder in ["assets", "fonts", "audio"]:
     path = os.path.join(FRONTEND_DIR, folder)
     if os.path.exists(path):
-        mount_cls = StaticFilesCache if folder == "assets" else StaticFiles
-        app.mount(f"/{folder}", mount_cls(directory=path), name=folder)
+        app.mount(f"/{folder}", StaticFilesCache(directory=path), name=folder)
+
 
 favicon_path = os.path.join(FRONTEND_DIR, "assets", "favicons", "favicon.ico")
 if os.path.exists(favicon_path):
