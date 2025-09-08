@@ -221,20 +221,18 @@ async def submit_answers(
                 answers_list = [item.get("answer", "") for item in parsed]
                 col_index = len(existing[0]) + 1 if existing and existing[0] else 2
 
-                # Подготовка всех обновлений
-                updates = [
-                    {"range": gspread.utils.rowcol_to_a1(1, col_index), "values": [[username]]},
-                    {"range": gspread.utils.rowcol_to_a1(2, col_index), "values": [[now]]}
-                ]
+                # Вставка имени и времени
+                ws.update_cell(1, col_index, username)
+                ws.update_cell(2, col_index, now)
 
+                # Обновление вопросов
                 for i, q in enumerate(questions):
                     row = i + 3
                     if len(existing) < row or not (existing[row - 1][0] if len(existing[row - 1]) > 0 else "").strip():
-                        updates.append({
-                            "range": gspread.utils.rowcol_to_a1(row, 1),
-                            "values": [[q]]
-                        })
+                        ws.update_cell(row, 1, q)
 
+                # Обновление ответов пакетно
+                updates = []
                 for i, ans in enumerate(answers_list):
                     row = i + 3
                     a = "да" if ans == "yes" else "нет" if ans == "no" else f"нет ({ans})" if ans else "нет"
@@ -243,7 +241,9 @@ async def submit_answers(
                         "values": [[a]]
                     })
 
-                ws.batch_update([{"range": u["range"], "values": u["values"]} for u in updates])
+                if updates:
+                    ws.batch_update(updates)
+
                 sheets_ok = True
             except Exception as e:
                 sheets_error = str(e)
@@ -263,6 +263,7 @@ async def submit_answers(
     except Exception as e:
         logger.exception("Ошибка при сохранении")
         raise HTTPException(status_code=500, detail=f"Ошибка при сохранении: {e}")
+
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():

@@ -1,20 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
-  if (!localStorage.getItem("test_finished")) {
-    window.location.href = "index.html";
-    return;
-  }
-
   const btn = document.getElementById("bubble-btn");
   const wrapper = document.getElementById("token-wrapper");
 
   wrapper.style.display = "none";
   btn.classList.remove("icon-only");
   btn.classList.add("bubble-download");
-  showBubbleModal();
+
+  showBubbleModal(() => {
+    if (!localStorage.getItem("test_finished")) {
+      window.location.href = "index.html";
+    }
+  });
 });
 
 /* ---------- МОДАЛКА ---------- */
-function showBubbleModal() {
+function showBubbleModal(onClose) {
   document.getElementById("bubble-modal")?.remove();
 
   const bubbleMsg = createModalBubble();
@@ -33,6 +33,7 @@ function showBubbleModal() {
         const btn = document.getElementById("bubble-btn");
         btn.classList.remove("icon-only");
         btn.classList.add("bubble-download", "visible");
+        if (typeof onClose === "function") onClose();
       },
       { once: true }
     );
@@ -98,17 +99,14 @@ function showMessageInsteadOfInput(msg, success = false) {
     wrapper.appendChild(note);
   }
 
-  // применяем классы
   note.classList.remove("success", "error");
   note.classList.add(success ? "success" : "error");
   note.textContent = msg;
 
-  // прячем только визуально инпут
   input.style.opacity = "0";
   note.style.opacity = "1";
   note.style.display = "flex";
 
-  // через 1.5 сек → убираем сообщение и возвращаем пузырь
   setTimeout(() => {
     note.style.display = "none";
     input.value = "";
