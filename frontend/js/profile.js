@@ -277,8 +277,8 @@ form.addEventListener("submit", async (ev) => {
 
     sendSound.onended = goToProcessing;
 
-    // Подстраховка: если звук не проигрался — перейти через 2.5 сек
-    setTimeout(goToProcessing, 2500);
+    // Подстраховка: если звук не проигрался — перейти через 1.5 сек
+    setTimeout(goToProcessing, 1500);
   }
 });
 

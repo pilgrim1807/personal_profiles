@@ -321,9 +321,8 @@ main {
 
 text {
   font-family: 'Manrope', sans-serif;
-  font-weight: lighter;
+  font-weight: 300;
   letter-spacing: 1px;
-  font-style: italic;
 }
 
 .gradient-text,

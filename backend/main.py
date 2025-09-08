@@ -226,8 +226,7 @@ async def submit_answers(
 
                 for i, q in enumerate(questions):
                     row_idx = i + 3
-                    if len(existing) < row_idx or not (existing[row_idx - 1][0] if len(existing[row_idx - 1]) > 0 else "").strip():
-                        ws.update_cell(row_idx, 1, q)
+                    ws.update_cell(row_idx, 1, q)
 
                 for i, raw_ans in enumerate(answers):
                     a = "да" if raw_ans == "yes" else "нет" if raw_ans == "no" else f"нет ({raw_ans})" if raw_ans else "нет"
