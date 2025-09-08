@@ -194,7 +194,7 @@ async def submit_answers(
         if not isinstance(parsed, list):
             raise ValueError("answers должен быть массивом объектов {question, answer}")
 
-        # SQLite сохраниение по стракам
+        # SQLite сохраниение построчно
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         cur = conn.cursor()
         rows_for_db = [
@@ -208,7 +208,6 @@ async def submit_answers(
         conn.commit()
         conn.close()
 
-        #  формат одна анкета — одна строка
         sheets_ok = False
         sheets_error = None
         tab_used = None
@@ -217,30 +216,24 @@ async def submit_answers(
         if ws:
             try:
                 tab_used = ws.title
+                existing = ws.get_all_values()
+                questions = [item.get("question", f"Q{i+1}") for i, item in enumerate(parsed)]
+                answers = [item.get("answer", "") for item in parsed]
+                next_col_index = len(existing[0]) + 1 if existing and existing[0] else 2
 
-                # Подготовка текущих заголовков
-                existing_headers = ws.row_values(1)
-                question_headers = [item.get("question", f"Q{i+1}") for i, item in enumerate(parsed)]
-                expected_headers = ["Имя", "Дата"] + question_headers
+                ws.update_cell(1, next_col_index, username)
+                ws.update_cell(2, next_col_index, now)
 
-                if len(existing_headers) < len(expected_headers):
-                    ws.resize(rows=1, cols=len(expected_headers))
-                    ws.update("1:1", [expected_headers])
+                for i, q in enumerate(questions):
+                    row_idx = i + 3
+                    if len(existing) < row_idx or not (existing[row_idx - 1][0] if len(existing[row_idx - 1]) > 0 else "").strip():
+                        ws.update_cell(row_idx, 1, q)
 
-                row = [username, now]
-                for item in parsed:
-                    raw_answer = item.get("answer", "")
-                    if raw_answer == "yes":
-                        ans = "да"
-                    elif raw_answer == "no":
-                        ans = "нет"
-                    else:
-                        ans = f"нет ({raw_answer})" if raw_answer else "нет"
-                    row.append(ans)
+                for i, raw_ans in enumerate(answers):
+                    a = "да" if raw_ans == "yes" else "нет" if raw_ans == "no" else f"нет ({raw_ans})" if raw_ans else "нет"
+                    ws.update_cell(i + 3, next_col_index, a)
 
-                ws.append_row(row, value_input_option="USER_ENTERED")
                 sheets_ok = True
-
             except Exception as e:
                 sheets_error = str(e)
                 logger.warning(f"⚠️ Ошибка записи в Google Sheets: {e}")
@@ -259,7 +252,6 @@ async def submit_answers(
     except Exception as e:
         logger.exception("Ошибка при сохранении")
         raise HTTPException(status_code=500, detail=f"Ошибка при сохранении: {e}")
-
 
 @app.get("/healthz", include_in_schema=False)
 def healthz():
