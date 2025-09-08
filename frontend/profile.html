@@ -4,56 +4,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Персональные анкеты</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-  <meta name="description"
-    content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.">
-  <meta name="keywords"
-    content="онлайн тест, психология, профили, личность, саморазвитие, тестирование, характер, анкета">
-  <meta name="author" content="Языкова Анастасия">
-  <meta name="theme-color" content="#2563eb">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Посмотрите персональные психологические анкеты участников.">
+  <meta name="keywords" content="анкеты, профили, психология, самопознание">
+  <meta name="author" content="Анастасия Языкова">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://personal-applications-2-5.onrender.com/profile.html">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Персональные анкеты">
-  <meta property="og:description" content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.">
- <meta property="og:url" content="https://personal-applications-2-5.onrender.com/profile.html">
+  <meta property="og:description" content="Посмотрите персональные психологические анкеты участников.">
+  <meta property="og:url" content="https://personal-applications-2-5.onrender.com/profile.html">
   <meta property="og:image" content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.png">
 
-  <!-- Schema.org -->
+  <!-- PWA -->
+  <link rel="manifest" href="manifest-profile.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ПсихоТест">
+
+  <!-- Preload Fonts -->
+  <link rel="preload" href="fonts/Oranienbaum-Regular.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Preload Audio -->
+  <link rel="preload" href="audio/projector_on.mp3" as="audio">
+  <link rel="preload" href="audio/projector.mp3" as="audio">
+  <link rel="preload" href="audio/send.mp3" as="audio">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/profile.css">
+
+  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "name": "Персональные анкеты",
-    "description": "Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики.",
+    "description": "Посмотрите персональные психологические анкеты участников.",
+    "url": "https://personal-applications-2-5.onrender.com/profile.html",
     "author": {
       "@type": "Person",
       "name": "Анастасия Языкова"
     },
-    "datePublished": "2025-08-17",
-    "url": "https://personal-applications-2-5.onrender.com/profile.html"
+    "datePublished": "2025-08-17"
   }
   </script>
-
-  <!-- url -->
-<link rel="canonical" href="https://personal-applications-2-5.onrender.com/profile.html">
-
-  <!-- Fonts preload -->
-  <link rel="preload" href="fonts/Oranienbaum-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-  <link rel="preload" href="fonts/Oranienbaum-Regular.woff" as="font" type="font/woff" crossorigin="anonymous">
-
-  <!-- Fonts CSS -->
-  <link rel="stylesheet" href="css/fonts.css">
-
-  <!-- Main styles -->
-  <link rel="stylesheet" href="css/profile.css">
-
-  <!-- Audio preload -->
- <audio id="preload-audio" src="audio/projector_on.mp3" autoplay muted loop></audio>
-
-  <!-- Manifest -->
-  <link rel="manifest" href="manifest-profile.json">
 </head>
 
 <body>
@@ -62,34 +61,34 @@
   <footer class="profile-footer"></footer>
 
   <!-- Подключение JS -->
-<script defer src="js/profiles.js"></script>
-<script defer src="js/profile.js"></script>
+  <script defer src="js/profiles.js"></script>
+  <script defer src="js/profile.js"></script>
 
-<!-- модальное окно(начало) -->
-<div id="flash-sound-modal" class="flash-sound-modal hidden">
-  <div class="projector-overlay"></div>
-  <div class="projector-light">
-    <div class="dust"></div>
-    <div class="projector-content">
-      <h2>Диапроектор готов</h2>
-      <p>Включите звук, чтобы ощутить атмосферу показа.</p>
-      <button id="flash-sound-btn" class="old-button">Начать просмотр</button>
+  <!-- модальное окно(начало) -->
+  <div id="flash-sound-modal" class="flash-sound-modal hidden">
+    <div class="projector-overlay"></div>
+    <div class="projector-light">
+      <div class="dust"></div>
+      <div class="projector-content">
+        <h2>Диапроектор готов</h2>
+        <p>Включите звук, чтобы ощутить атмосферу показа.</p>
+        <button id="flash-sound-btn" class="old-button">Начать просмотр</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- модальное окно(возобновление)-->
-<div id="intro-modal" class="flash-sound-modal hidden">
-  <div class="projector-overlay"></div>
-  <div class="projector-light">
-    <div class="dust"></div>
-    <div class="projector-content">
-      <h2>Возобновление сеанса</h2>
-      <p>Звук усиливает впечатление от происходящего.</p>
-      <button id="intro-btn" class="old-button">Вернуться к просмотру</button>
+  <!-- модальное окно(возобновление)-->
+  <div id="intro-modal" class="flash-sound-modal hidden">
+    <div class="projector-overlay"></div>
+    <div class="projector-light">
+      <div class="dust"></div>
+      <div class="projector-content">
+        <h2>Возобновление сеанса</h2>
+        <p>Звук усиливает впечатление от происходящего.</p>
+        <button id="intro-btn" class="old-button">Вернуться к просмотру</button>
+      </div>
     </div>
   </div>
-</div>
 
 
 </body>

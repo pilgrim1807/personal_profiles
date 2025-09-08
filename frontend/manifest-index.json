@@ -1,11 +1,11 @@
 {
   "id": "/index",
-  "name": "Психологический онлайн-тест — Выбор профиля",
+  "name": "ПсихоТест — Выбор профиля",
   "short_name": "ПсихоТест",
-  "description": "Пройди онлайн-тест и выбери свой профиль.",
+  "description": "Пройди онлайн‑тест и выбери свой профиль.",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "/",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
@@ -44,13 +44,23 @@
       "name": "Выбор профиля",
       "short_name": "Профили",
       "url": "/index.html",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Результаты теста",
       "short_name": "Результаты",
       "url": "/processing.html",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "prefer_related_applications": false

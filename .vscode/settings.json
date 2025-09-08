@@ -1,4 +1,5 @@
 {
-    "search.useGlobalIgnoreFiles": true,
-    "search.useParentIgnoreFiles": true
+  "python.analysis.extraPaths": ["./backend"],
+  "python.defaultInterpreterPath": "backend/venv/bin/python",
+  "python.envFile": "${workspaceFolder}/backend/.env"
 }

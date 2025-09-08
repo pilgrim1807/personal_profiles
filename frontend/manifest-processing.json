@@ -1,8 +1,8 @@
 {
-  "id": "psychotest.processing",
+  "id": "/processing",
   "name": "ПсихоТест — Завершение теста",
-  "short_name": "Завершение",
-  "description": "Спасибо! Твои ответы отправлены.",
+  "short_name": "Спасибо",
+  "description": "Спасибо! Твои ответы успешно отправлены. Посмотрите анкеты или пройдите тест снова.",
   "lang": "ru",
   "dir": "ltr",
   "start_url": "/processing.html",
@@ -15,16 +15,41 @@
   "categories": ["education", "lifestyle"],
   "icons": [
     {
-      "src": "assets/favicons/processing.png",
+      "src": "assets/favicons/processing-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/favicons/processing.png",
+      "src": "assets/favicons/processing-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Пройти тест снова",
+      "short_name": "Снова тест",
+      "url": "/index.html",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Смотреть анкеты",
+      "short_name": "Анкеты",
+      "url": "/profile.html",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
 }

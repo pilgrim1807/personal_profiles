@@ -1,27 +1,33 @@
 {
-  "id": "/processing",
-  "name": "ПсихоТест — Спасибо за прохождение",
-  "short_name": "Спасибо",
-  "description": "Ваши ответы успешно отправлены. Пройдите тест снова или посмотрите анкеты.",
+  "id": "/profile",
+  "name": "ПсихоТест — Профили участников",
+  "short_name": "Профили",
+  "description": "Посмотрите персональные психологические анкеты участников.",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "/processing.html",
+  "start_url": "/profile.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "categories": ["education", "productivity"],
+  "categories": ["education", "health", "lifestyle"],
   "icons": [
     {
-      "src": "assets/favicons/processing-192.png",
+      "src": "assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/favicons/processing-512.png",
+      "src": "assets/icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -29,17 +35,27 @@
   ],
   "shortcuts": [
     {
-      "name": "Пройти тест снова",
-      "short_name": "Снова тест",
-      "url": "/index.html",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+      "name": "Перейти к профилям",
+      "short_name": "Профили",
+      "url": "/profile.html",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "name": "Смотреть анкеты",
-      "short_name": "Анкеты",
-      "url": "/profile.html",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+      "name": "Пройти тест",
+      "short_name": "Тест",
+      "url": "/index.html",
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
-
