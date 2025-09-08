@@ -259,11 +259,12 @@ form.addEventListener("submit", async (ev) => {
     const sendSound = new Audio("audio/send.mp3");
     sendSound.play().catch(() => {});
 
-    // Отправка начнётся сразу
     const sendingPromise = submitResults(profile, answers);
 
-    // Когда звук закончится — перейти на следующую страницу
+    let transitioned = false;
     const goToProcessing = async () => {
+      if (transitioned) return;
+      transitioned = true;
       const ok = await sendingPromise;
       if (ok) {
         localStorage.removeItem(`progress_${profile.caption}`);
@@ -277,10 +278,10 @@ form.addEventListener("submit", async (ev) => {
 
     sendSound.onended = goToProcessing;
 
-    // Подстраховка: если звук не проигрался — перейти через 1.5 сек
-    setTimeout(goToProcessing, 1500);
+    setTimeout(goToProcessing, 1000);
   }
 });
+
 
 }
 
@@ -448,6 +449,7 @@ function startProfileTest(profile, idx, answers, loader) {
 
 window.onload = function () {
   const name = getParam("name");
+  const reset = getParam("reset") === "1";
   if (!name || !window.PROFILES || !window.PROFILES[name]) {
     document.body.innerHTML = "<h1>Ошибка! Профиль не найден.</h1>";
     return;
@@ -457,6 +459,13 @@ window.onload = function () {
   document.body.className = `profile-page profile-page--${profile.theme}`;
   setDynamicMeta(profile);
 
+  // Очистить прогресс, если пользователь прошёл тест или пришёл по ссылке reset=1
+  if (reset || localStorage.getItem("test_finished") === "true") {
+    localStorage.removeItem(`progress_${name}`);
+    localStorage.removeItem("test_finished");
+  }
+
+  // Загрузка прогресса (если есть)
   const { idx, answers } = loadProgress(name, profile.questions.length);
 
   let app = document.getElementById("profile-app");
@@ -470,7 +479,6 @@ window.onload = function () {
   loader.className = "page-loader";
   document.body.appendChild(loader);
 
-  // Прелоадим все фото
   const photos = [];
   if (profile.photo) photos.push(profile.photo);
   if (Array.isArray(profile.photos)) photos.push(...profile.photos);

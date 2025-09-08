@@ -194,7 +194,7 @@ async def submit_answers(
         if not isinstance(parsed, list):
             raise ValueError("answers должен быть массивом объектов {question, answer}")
 
-        # SQLite сохраниение построчно
+        # SQLite сохранение
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
         cur = conn.cursor()
         rows_for_db = [
@@ -218,20 +218,32 @@ async def submit_answers(
                 tab_used = ws.title
                 existing = ws.get_all_values()
                 questions = [item.get("question", f"Q{i+1}") for i, item in enumerate(parsed)]
-                answers = [item.get("answer", "") for item in parsed]
-                next_col_index = len(existing[0]) + 1 if existing and existing[0] else 2
+                answers_list = [item.get("answer", "") for item in parsed]
+                col_index = len(existing[0]) + 1 if existing and existing[0] else 2
 
-                ws.update_cell(1, next_col_index, username)
-                ws.update_cell(2, next_col_index, now)
+                # Подготовка всех обновлений
+                updates = [
+                    {"range": gspread.utils.rowcol_to_a1(1, col_index), "values": [[username]]},
+                    {"range": gspread.utils.rowcol_to_a1(2, col_index), "values": [[now]]}
+                ]
 
                 for i, q in enumerate(questions):
-                    row_idx = i + 3
-                    ws.update_cell(row_idx, 1, q)
+                    row = i + 3
+                    if len(existing) < row or not (existing[row - 1][0] if len(existing[row - 1]) > 0 else "").strip():
+                        updates.append({
+                            "range": gspread.utils.rowcol_to_a1(row, 1),
+                            "values": [[q]]
+                        })
 
-                for i, raw_ans in enumerate(answers):
-                    a = "да" if raw_ans == "yes" else "нет" if raw_ans == "no" else f"нет ({raw_ans})" if raw_ans else "нет"
-                    ws.update_cell(i + 3, next_col_index, a)
+                for i, ans in enumerate(answers_list):
+                    row = i + 3
+                    a = "да" if ans == "yes" else "нет" if ans == "no" else f"нет ({ans})" if ans else "нет"
+                    updates.append({
+                        "range": gspread.utils.rowcol_to_a1(row, col_index),
+                        "values": [[a]]
+                    })
 
+                ws.batch_update([{"range": u["range"], "values": u["values"]} for u in updates])
                 sheets_ok = True
             except Exception as e:
                 sheets_error = str(e)
