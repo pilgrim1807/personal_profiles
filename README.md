@@ -40,7 +40,7 @@ frontend/
     index.html               # Выбор профиля
     profile.html             # Просмотр профиля
     processing.html          # Результаты
-    assets/                  # Изображения и иконки
+    /static/assets/          # Изображения и иконки
     css/                     # Стили
     js/                      # Скрипты
     fonts/                   # Шрифты

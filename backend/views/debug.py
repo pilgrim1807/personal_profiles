@@ -21,8 +21,9 @@ def whoami():
     except Exception as e:
         return {"error": str(e)}
 
-@router.post("/debug/google", include_in_schema=False)
+@router.api_route("/debug/google", methods=["GET", "POST"], include_in_schema=False)
 def debug_google():
+
     ws = get_sheet_first_tab()
     if not ws:
         return {"sheets_ok": False, "error": "no worksheet (auth/access failed)"}

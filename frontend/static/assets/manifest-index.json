@@ -1,11 +1,11 @@
 {
-  "id": "/profile",
-  "name": "ПсихоТест — Профили участников",
-  "short_name": "Профили",
-  "description": "Посмотрите персональные психологические анкеты участников.",
+  "id": "/index",
+  "name": "ПсихоТест — Выбор профиля",
+  "short_name": "ПсихоТест",
+  "description": "Пройди онлайн‑тест и выбери свой профиль.",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "/profile.html",
+  "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
@@ -15,43 +15,49 @@
   "categories": ["education", "health", "lifestyle"],
   "icons": [
     {
-      "src": "assets/icons/icon-192.png",
+      "src": "/static/assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/icons/icon-384.png",
+      "src": "/static/assets/icons/icon-384.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/icons/icon-512.png",
+      "src": "/static/assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/static/assets/icons/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "shortcuts": [
     {
-      "name": "Перейти к профилям",
+      "name": "Выбор профиля",
       "short_name": "Профили",
-      "url": "/profile.html",
+      "url": "/index.html",
       "icons": [
         {
-          "src": "assets/icons/icon-192.png",
+          "src": "/static/assets/icons/icon-192.png",
           "sizes": "192x192"
         }
       ]
     },
     {
-      "name": "Пройти тест",
-      "short_name": "Тест",
-      "url": "/index.html",
+      "name": "Результаты теста",
+      "short_name": "Результаты",
+      "url": "/processing.html",
       "icons": [
         {
-          "src": "assets/icons/icon-192.png",
+          "src": "/static/assets/icons/icon-192.png",
           "sizes": "192x192"
         }
       ]

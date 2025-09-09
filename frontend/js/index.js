@@ -1,11 +1,12 @@
 // Данные профилей
 const PROFILES = [
-  { name: "Сергей", jpg: "assets/names/sergey.jpg", webp: "assets/names/sergey.webp", className: "sergey" },
-  { name: "Андрей", jpg: "assets/names/andrey.jpg", webp: "assets/names/andrey.webp", className: "andrey" },
-  { name: "Соня", jpg: "assets/names/sonya.jpg", webp: "assets/names/sonya.webp", className: "sonya" },
-  { name: "Валера", jpg: "assets/names/valera.jpg", webp: "assets/names/valera.webp", className: "valera" },
-  { name: "Воваха", jpg: "assets/names/vovaha.jpg", webp: "assets/names/vovaha.webp", className: "vovaha" }
+  { name: "Сергей", jpg: "/static/assets/names/sergey.jpg", webp: "/static/assets/names/sergey.webp", className: "sergey" },
+  { name: "Андрей", jpg: "/static/assets/names/andrey.jpg", webp: "/static/assets/names/andrey.webp", className: "andrey" },
+  { name: "Соня", jpg: "/static/assets/names/sonya.jpg", webp: "/static/assets/names/sonya.webp", className: "sonya" },
+  { name: "Валера", jpg: "/static/assets/names/valera.jpg", webp: "/static/assets/names/valera.webp", className: "valera" },
+  { name: "Воваха", jpg: "/static/assets/names/vovaha.jpg", webp: "/static/assets/names/vovaha.webp", className: "vovaha" }
 ];
+
 
 // Предзагрузка изображений
 function preloadAllImages() {

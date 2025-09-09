@@ -50,13 +50,13 @@ async def serve_index():
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta property="og:title" content="Психологические портреты участников 2/5" />
         <meta property="og:description" content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики." />
-        <meta property="og:image" content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.jpg" />
+        <meta property="og:image" content="https://personal-applications-2-5.onrender.com/static/assets/favicons/social-preview.jpg" />
         <meta property="og:url" content="https://personal-applications-2-5.onrender.com" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Психологические портреты участников 2/5" />
         <meta name="twitter:description" content="Пройдите онлайн-тест, чтобы мы убедились, что правильно составили ваши характиристики." />
-        <meta name="twitter:image" content="https://personal-applications-2-5.onrender.com/assets/favicons/social-preview.jpg" />
+        <meta name="twitter:image" content="https://personal-applications-2-5.onrender.com/static/assets/favicons/social-preview.jpg" />
     </head>
     <body>
         <script>window.location.replace("/index.html")</script>
