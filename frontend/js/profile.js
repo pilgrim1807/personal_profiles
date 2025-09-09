@@ -235,52 +235,52 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
-// Сабмит формы
-form.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  if (submitted) return;
-  submitted = true;
+  // Сабмит формы
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (submitted) return;
+    submitted = true;
 
-  const val = form.answer.value;
-  if (val === "no" && !customInput.value.trim()) {
-    customInput.focus();
-    submitted = false;
-    return;
-  }
+    const val = form.answer.value;
+    if (val === "no" && !customInput.value.trim()) {
+      customInput.focus();
+      submitted = false;
+      return;
+    }
 
-  answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-  saveProgress(profile.caption, idx, answers);
+    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
+    saveProgress(profile.caption, idx, answers);
 
-  if (idx < n - 1) {
-    playSound("audio/projector.mp3");
-    showQuestion(profile, idx + 1, answers);
-    submitted = false;
-  } else {
-    const sendSound = new Audio("audio/send.mp3");
-    sendSound.play().catch(() => {});
+    if (idx < n - 1) {
+      playSound("audio/projector.mp3");
+      showQuestion(profile, idx + 1, answers);
+      submitted = false;
+    } else {
+      const sendSound = new Audio("audio/send.mp3");
+      sendSound.play().catch(() => { });
 
-    const sendingPromise = submitResults(profile, answers);
+      const sendingPromise = submitResults(profile, answers);
 
-    let transitioned = false;
-    const goToProcessing = async () => {
-      if (transitioned) return;
-      transitioned = true;
-      const ok = await sendingPromise;
-      if (ok) {
-        localStorage.removeItem(`progress_${profile.caption}`);
-        localStorage.setItem("test_finished", "true");
-        window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
-      } else {
-        submitted = false;
-        alert("Ошибка при отправке. Попробуй снова.");
-      }
-    };
+      let transitioned = false;
+      const goToProcessing = async () => {
+        if (transitioned) return;
+        transitioned = true;
+        const ok = await sendingPromise;
+        if (ok) {
+          localStorage.removeItem(`progress_${profile.caption}`);
+          localStorage.setItem("test_finished", "true");
+          window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
+        } else {
+          submitted = false;
+          alert("Ошибка при отправке. Попробуй снова.");
+        }
+      };
 
-    sendSound.onended = goToProcessing;
+      sendSound.onended = goToProcessing;
 
-    setTimeout(goToProcessing, 1000);
-  }
-});
+      setTimeout(goToProcessing, 1000);
+    }
+  });
 
 
 }
@@ -312,11 +312,12 @@ async function submitResults(profile, answers) {
       formData.append(`photos`, blob, `photo_${i}.jpg`);
     });
 
-    const res = await fetch("https://personal-applications-2-5.onrender.com/submit", {
+    const res = await fetch("https://personal-applications-2-5.onrender.com/api/submit/submit", {
       method: "POST",
       body: formData,
       keepalive: true,
     });
+
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "");

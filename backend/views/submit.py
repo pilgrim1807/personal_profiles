@@ -52,11 +52,16 @@ async def submit_answers(
                 ws.update_cell(1, col, username)
                 ws.update_cell(2, col, now)
 
-                # Подготовка пар: вопрос -> ответ
                 updates = []
                 for i, item in enumerate(parsed):
                     question = item.get("question", f"Q{i+1}")
-                    answer = item.get("answer", "")
+                    raw_ans = item.get("answer", "")
+                    answer = (
+                        "да" if raw_ans == "yes"
+                        else "нет" if raw_ans == "no"
+                        else f"нет ({raw_ans})" if raw_ans
+                        else "нет"
+                    )
 
                     row_q = 3 + i * 2
                     row_a = row_q + 1
@@ -64,7 +69,6 @@ async def submit_answers(
                     updates.append({"range": rowcol_to_a1(row_q, col), "values": [[question]]})
                     updates.append({"range": rowcol_to_a1(row_a, col), "values": [[answer]]})
 
-                # Обновляем таблицу
                 if updates and not safe_batch_update(ws, updates):
                     raise Exception("Ошибка при записи в Google Таблицу")
 
