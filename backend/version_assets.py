@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 HTML_DIR = Path("frontend")
-EXTS = ("css", "js")
+EXTS = ("css", "js", "jpg", "jpeg", "png", "webp")
 version = int(time.time())
 
 def update_versions_in_file(file_path: Path):
@@ -11,10 +11,14 @@ def update_versions_in_file(file_path: Path):
         content = f.read()
 
     original = content
+
     for ext in EXTS:
-        
-        pattern = re.compile(rf'({ext}/[^"\']+\.{ext})(\?v=\d+)?')
+        # Обновление ресурсов со строками вида
+        pattern = re.compile(rf'((?:{ext}/)?[^"\']+\.{ext})(\?v=\d+)?')
         content = pattern.sub(rf'\1?v={version}', content)
+
+        og_pattern = re.compile(rf'((https?:\/\/[^"\']+\.{ext}))(\?v=\d+)?')
+        content = og_pattern.sub(rf'\1?v={version}', content)
 
     if content != original:
         with file_path.open("w", encoding="utf-8") as f:
@@ -26,7 +30,7 @@ def update_versions_in_file(file_path: Path):
 def main():
     html_files = list(HTML_DIR.glob("*.html"))
     if not html_files:
-        print("⚠️ HTML-файлы не найдены")
+        print("⚠️ HTML-файлы не найдены в директории frontend/")
         return
 
     print(f"🔄 Обновление кэш-версий с ?v={version}")
@@ -35,3 +39,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
