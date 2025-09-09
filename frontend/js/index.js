@@ -2,7 +2,7 @@
 const PROFILES = [
   { name: "Сергей", jpg: "assets/names/sergey.jpg", webp: "assets/names/sergey.webp", className: "sergey" },
   { name: "Андрей", jpg: "assets/names/andrey.jpg", webp: "assets/names/andrey.webp", className: "andrey" },
-  { name: "Соня",   jpg: "assets/names/sonya.jpg",  webp: "assets/names/sonya.webp",  className: "sonya" },
+  { name: "Соня", jpg: "assets/names/sonya.jpg", webp: "assets/names/sonya.webp", className: "sonya" },
   { name: "Валера", jpg: "assets/names/valera.jpg", webp: "assets/names/valera.webp", className: "valera" },
   { name: "Воваха", jpg: "assets/names/vovaha.jpg", webp: "assets/names/vovaha.webp", className: "vovaha" }
 ];
@@ -64,12 +64,12 @@ function initSoundWarning() {
 
       flash.classList.add("active");
       flashSound.currentTime = 0;
-      flashSound.play().catch(() => {});
+      flashSound.play().catch(() => { });
       setTimeout(() => flash.classList.remove("active"), 1000);
 
       setTimeout(() => {
         ejectSound.currentTime = 0;
-        ejectSound.play().catch(() => {});
+        ejectSound.play().catch(() => { });
         box.classList.add("show");
       }, 800);
     });
@@ -116,60 +116,6 @@ function initThemeToggle() {
   });
 }
 
-// Запуск
-document.addEventListener("DOMContentLoaded", () => {
-  renderProfiles();
-  initThemeToggle();
-
-  const btn = document.getElementById("bubble-btn");
-  const wrapper = document.getElementById("token-wrapper");
-
-  if (btn && wrapper) {
-    wrapper.style.display = "none";
-    btn.classList.remove("icon-only");
-    btn.classList.add("bubble-download", "visible");
-
-    // Клик по пузырю 📥
-    btn.addEventListener("click", () => {
-      bubbleSound.currentTime = 0;
-      bubbleSound.play().catch(() => {});
-
-      btn.classList.add("pop");
-      createSplashes(btn);
-
-      btn.addEventListener("animationend", () => {
-        btn.classList.remove("pop");
-        btn.classList.add("icon-only");
-        wrapper.style.display = "block";
-        document.getElementById("token-input")?.focus();
-      }, { once: true });
-    });
-
-    // Обработка токена
-    document.getElementById("token-input")?.addEventListener("keypress", (e) => {
-      if (e.key !== "Enter") return;
-      const token = e.target.value.trim();
-      if (!token) return;
-
-      fetch("/submit_token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token })
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("invalid");
-          return res.json();
-        })
-        .then(() => {
-          showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
-        })
-        .catch(() => {
-          showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
-        });
-    });
-  }
-});
-
 // Сообщение вместо инпута
 function showMessageInsteadOfInput(msg, success = false) {
   const wrapper = document.getElementById("token-wrapper");
@@ -188,10 +134,8 @@ function showMessageInsteadOfInput(msg, success = false) {
   note.classList.add(success ? "success" : "error", "show");
   note.textContent = msg;
 
-  // показать сообщение
   note.style.display = "flex";
 
-  // через 1.5 сек исчезает → возвращаем пузырь
   setTimeout(() => {
     note.classList.remove("show");
     setTimeout(() => {
@@ -249,3 +193,90 @@ function createSplash(x, y, hue, size) {
   document.body.appendChild(d);
   d.addEventListener("animationend", () => d.remove());
 }
+
+function downloadCSV(token) {
+  fetch(window.location.origin + "/answers.csv", {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Ошибка доступа");
+      return res.blob();
+    })
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "answers.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch((err) => {
+      showMessageInsteadOfInput("⛔ Ошибка при скачивании: " + err.message, false);
+    });
+}
+
+// Запуск
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderProfiles();
+  initThemeToggle();
+
+  const savedToken = localStorage.getItem("token_validated");
+  if (savedToken) {
+    try {
+      downloadCSV(savedToken);
+    } catch (e) {
+      showMessageInsteadOfInput("⛔ Ошибка при загрузке CSV", false);
+    }
+  }
+
+  const btn = document.getElementById("bubble-btn");
+  const wrapper = document.getElementById("token-wrapper");
+
+  if (btn && wrapper) {
+    wrapper.style.display = "none";
+    btn.classList.remove("icon-only");
+    btn.classList.add("bubble-download", "visible");
+
+    btn.addEventListener("click", () => {
+      bubbleSound.currentTime = 0;
+      bubbleSound.play().catch(() => { });
+
+      btn.classList.add("pop");
+      createSplashes(btn);
+
+      btn.addEventListener("animationend", () => {
+        btn.classList.remove("pop");
+        btn.classList.add("icon-only");
+        wrapper.style.display = "block";
+        document.getElementById("token-input")?.focus();
+      }, { once: true });
+    });
+
+    document.getElementById("token-input")?.addEventListener("keypress", (e) => {
+      if (e.key !== "Enter") return;
+      const token = e.target.value.trim();
+      if (!token) return;
+
+      fetch(window.location.origin + "/submit_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("invalid");
+          return res.json();
+        })
+        .then(() => {
+          localStorage.setItem("token_validated", token);
+          showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
+          setTimeout(() => downloadCSV(token), 1600);
+        })
+        .catch(() => {
+          showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
+        });
+    });
+  }
+});

@@ -1,17 +1,23 @@
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("bubble-btn");
-  const wrapper = document.getElementById("token-wrapper");
+  const tokenWrapper = document.getElementById("token-wrapper");
 
-  wrapper.style.display = "none";
-  btn.classList.remove("icon-only");
-  btn.classList.add("bubble-download");
+  if (!btn || !tokenWrapper) return;
+
+  tokenWrapper.style.display = "none";
+  btn.style.display = "none";
 
   showBubbleModal(() => {
+    btn.style.display = "inline-block";
+    btn.classList.remove("icon-only");
+    btn.classList.add("bubble-download", "visible");
+
     if (!localStorage.getItem("test_finished")) {
       window.location.href = "index.html";
     }
   });
 });
+
 
 /* ---------- МОДАЛКА ---------- */
 function showBubbleModal(onClose) {
@@ -41,10 +47,15 @@ function showBubbleModal(onClose) {
 }
 
 /* ---------- КНОПКА-ПУЗЫРЬ ---------- */
-document.getElementById("bubble-btn").addEventListener("click", () => {
+document.getElementById("bubble-btn")?.addEventListener("click", () => {
   const btn = document.getElementById("bubble-btn");
+  const tokenInput = document.getElementById("token-input");
+  const tokenWrapper = document.getElementById("token-wrapper");
+  const token = tokenInput?.value?.trim();
   const popSound = new Audio("audio/bubble.mp3");
-  popSound.play();
+
+  popSound.currentTime = 0;
+  popSound.play().catch(() => {});
 
   btn.classList.add("pop");
   createSplashes(btn);
@@ -53,13 +64,44 @@ document.getElementById("bubble-btn").addEventListener("click", () => {
     "animationend",
     () => {
       btn.classList.remove("pop");
-      btn.classList.add("icon-only"); // пузырь исчезает, иконка остаётся
-      document.getElementById("token-wrapper").style.display = "block";
-      document.getElementById("token-input").focus();
+
+      if (token && localStorage.getItem("token_validated") === token) {
+        downloadCSV(token);
+        return;
+      }
+
+      btn.classList.add("icon-only");
+      tokenWrapper.style.display = "block";
+      tokenInput.focus();
     },
     { once: true }
   );
 });
+
+/* ---------- СКАЧИВАНИЕ CSV ---------- */
+function downloadCSV(token) {
+  fetch(window.location.origin + "/answers.csv", {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Ошибка доступа");
+      return res.blob();
+    })
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "answers.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    })
+    .catch((err) => {
+      showTokenMessage("⛔ Ошибка при скачивании: " + err.message, false);
+    });
+}
+
 
 /* ---------- ВВОД ТОКЕНА ---------- */
 document.getElementById("token-input").addEventListener("keypress", (e) => {
@@ -68,22 +110,29 @@ document.getElementById("token-input").addEventListener("keypress", (e) => {
   const token = e.target.value.trim();
   if (!token) return;
 
-fetch("/submit_token", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ token })
-})
+  fetch(window.location.origin + "/submit_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token })
+  })
 
     .then((res) => {
       if (!res.ok) throw new Error("invalid");
       return res.json();
     })
-    .then(() => {
-      showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
-    })
-    .catch(() => {
-      showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
-    });
+  .then(() => {
+  localStorage.setItem("token_validated", token);  // 💾 сохраняем токен
+  showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
+
+  // Автоматическая загрузка CSV
+  setTimeout(() => {
+    downloadCSV(token);
+  }, 1600);
+})
+
+  .catch(() => {
+    showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
+  });
 });
 
 /* ---------- СООБЩЕНИЕ ВМЕСТО ИНПУТА ---------- */
@@ -120,14 +169,11 @@ function growBubbleBack() {
   const wrapper = document.getElementById("token-wrapper");
   const btn = document.getElementById("bubble-btn");
 
-  // полностью скрываем всю обёртку
   wrapper.style.display = "none";
 
-  // сброс пузыря к иконке
   btn.classList.remove("bubble-download", "visible");
   btn.classList.add("icon-only");
 
-  // анимация роста пузыря
   requestAnimationFrame(() => {
     btn.classList.remove("icon-only");
     btn.classList.add("bubble-download", "grow");
@@ -264,4 +310,5 @@ function createModalBubble() {
 
   return msg;
 }
+
 

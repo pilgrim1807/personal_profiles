@@ -1,7 +1,9 @@
 import os
 from fastapi import APIRouter, HTTPException, Body
 
-ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "sekret123")
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")
+if not ADMIN_TOKEN:
+    raise RuntimeError("❌ Переменная окружения ADMIN_TOKEN не задана!")
 
 router = APIRouter()
 

@@ -12,10 +12,8 @@ from backend.utils.sheets_utils import (
     safe_batch_update
 )
 
-
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
 
 @router.post("/submit")
 async def submit_answers(
@@ -30,8 +28,11 @@ async def submit_answers(
         parsed = json.loads(answers)
         if not isinstance(parsed, list):
             raise ValueError("Поле 'answers' должно быть массивом объектов {question, answer}")
-
+        logger.info(f"📩 ▶️ SUBMIT от {username}, {len(parsed)} ответов:")
+        for i, item in enumerate(parsed, 1):
+            logger.info(f"  Q{i}: {item.get('question')} → {item.get('answer')}")
         save_answers_to_db(username, parsed, now)
+
 
         # Работа с Google Sheets
         sheets_ok = False

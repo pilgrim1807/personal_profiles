@@ -3,13 +3,18 @@ import logging
 import certifi
 import requests
 import gspread
+import sqlite3
 from typing import Optional
+from collections import defaultdict
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
 from gspread.utils import rowcol_to_a1 as rca1
 
+# Настройка логгирования
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
+# Переменные окружения
 SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
@@ -17,7 +22,9 @@ SCOPE = [
 
 SHEET_ID = os.getenv("SHEET_ID", "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA")
 CREDENTIALS_PATH = os.environ["GOOGLE_CREDENTIALS_PATH"]
+DB_PATH = os.getenv("DB_PATH", "tests.db")
 
+# Глобальные объекты
 credentials: Optional[Credentials] = None
 gc: Optional[gspread.Client] = None
 worksheet: Optional[gspread.Worksheet] = None
@@ -74,6 +81,83 @@ def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
         return None
 
 
+def upload_answers_to_sheet_formatted(db_path=DB_PATH):
+    try:
+        worksheet = get_sheet_first_tab()
+        if not worksheet:
+            logger.error("❌ worksheet недоступен")
+            return
+
+        # Чтение данных из SQLite
+        conn = sqlite3.connect(db_path)
+        cur = conn.cursor()
+        cur.execute("SELECT username, question, answer, created_at FROM answers ORDER BY created_at ASC")
+        rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            logger.warning("⚠️ Нет данных для экспорта")
+            return
+
+        # Группировка по пользователям
+        grouped = defaultdict(list)
+        created_at_map = {}
+
+        for username, question, answer, created_at in rows:
+            grouped[username].append((question, answer))
+            if username not in created_at_map:
+                created_at_map[username] = created_at
+
+        # Уникальные вопросы
+        all_questions = []
+        seen = set()
+        for answers in grouped.values():
+            for q, _ in answers:
+                if q not in seen:
+                    seen.add(q)
+                    all_questions.append(q)
+
+        # Формирование строк
+        header_row = []
+        date_row = []
+        for username in grouped:
+            header_row.extend([username, ""])
+            date_row.extend([created_at_map[username], ""])
+
+        data_rows = []
+        for question in all_questions:
+            row = [question]
+            for username in grouped:
+                answers_dict = dict(grouped[username])
+                row.extend([answers_dict.get(question, ""), ""])
+            data_rows.append(row)
+
+        all_rows = [
+            [""] + header_row,
+            [""] + date_row,
+            *data_rows
+        ]
+
+        # Очистка и загрузка данных
+        worksheet.clear()
+
+        updates = []
+        for r_idx, row in enumerate(all_rows, start=1):
+            end_col = chr(65 + len(row) - 1)  # ограничение: до колонки Z
+            range_a1 = f"A{r_idx}:{end_col}{r_idx}"
+            updates.append({
+                "range": range_a1,
+                "values": [row]
+            })
+
+        worksheet.batch_update(updates, value_input_option="USER_ENTERED")
+        logger.info(f"✅ Успешно загружено {len(all_rows)} строк в Google Sheets")
+
+    except Exception as e:
+        logger.error(f"❌ Ошибка upload_answers_to_sheet_formatted: {e}")
+
+
+# 🔧 Утилиты (если вдруг понадобятся)
 def find_next_available_column(ws):
     values = ws.row_values(1)
     return len(values) + 1
