@@ -352,7 +352,7 @@ async function submitAnswers(answers) {
   formData.append("answers", JSON.stringify(answers));
 
   try {
-    const response = await fetch("https://personal-applications-2-5.onrender.com/submit", {
+    const response = await fetch("https://personal-applications-2-5.onrender.com/api/submit/submit", {
       method: "POST",
       body: formData
     });

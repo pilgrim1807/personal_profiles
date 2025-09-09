@@ -85,12 +85,12 @@ function initSoundWarning() {
 
       flash.classList.add("active");
       flashSound.currentTime = 0;
-      flashSound.play().catch(() => {});
+      flashSound.play().catch(() => { });
       setTimeout(() => flash.classList.remove("active"), 1000);
 
       setTimeout(() => {
         ejectSound.currentTime = 0;
-        ejectSound.play().catch(() => {});
+        ejectSound.play().catch(() => { });
         box.classList.add("show");
       }, 800);
     });
@@ -288,10 +288,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const token = e.target.value.trim();
       if (!token) return;
 
-      fetch(window.location.origin + "/submit_token", {
+      const formData = new FormData();
+      formData.append("token", token);
+
+      fetch("/submit_token", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token })
+        body: formData
       })
         .then((res) => {
           if (!res.ok) throw new Error("invalid");
@@ -308,5 +310,6 @@ document.addEventListener("DOMContentLoaded", () => {
           showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
         });
     });
+
   }
 });

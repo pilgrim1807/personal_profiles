@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
 /* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
 
 function showBubbleModal(onClose) {
@@ -154,23 +153,23 @@ function hideLoader(loader) {
 }
 
 /* ---------- ВВОД ТОКЕНА ---------- */
-document.getElementById("token-input").addEventListener("keypress", (e) => {
+document.getElementById("token-input")?.addEventListener("keypress", (e) => {
   if (e.key !== "Enter") return;
 
   const token = e.target.value.trim();
   if (!token) return;
 
-  fetch(window.location.origin + "/submit_token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token })
-  })
+  const formData = new FormData();
+  formData.append("token", token);
 
+  fetch("/submit_token", {
+    method: "POST",
+    body: formData
+  })
     .then((res) => {
       if (!res.ok) throw new Error("invalid");
       return res.json();
     })
-
     .then(() => {
       saveToken(token);
       showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
@@ -178,11 +177,11 @@ document.getElementById("token-input").addEventListener("keypress", (e) => {
         downloadCSV();
       }, 1600);
     })
-
     .catch(() => {
       showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
     });
 });
+
 
 /* ---------- СООБЩЕНИЕ ВМЕСТО ИНПУТА ---------- */
 function showMessageInsteadOfInput(msg, success = false) {
