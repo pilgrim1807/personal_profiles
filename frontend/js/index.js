@@ -8,14 +8,22 @@ const PROFILES = [
 ];
 
 // Предзагрузка изображений
-function preloadImages() {
-  PROFILES.forEach(p => {
-    const imgWebp = new Image();
-    imgWebp.src = p.webp;
-
-    const imgJpg = new Image();
-    imgJpg.src = p.jpg;
-  });
+function preloadAllImages() {
+  const promises = PROFILES.flatMap(p => [
+    new Promise(res => {
+      const i = new Image();
+      i.onload = res;
+      i.onerror = res;
+      i.src = p.webp;
+    }),
+    new Promise(res => {
+      const i = new Image();
+      i.onload = res;
+      i.onerror = res;
+      i.src = p.jpg;
+    })
+  ]);
+  return Promise.all(promises);
 }
 
 // Рендеринг карточек
@@ -32,16 +40,16 @@ function renderProfiles() {
           <source srcset="${profile.webp}" type="image/webp">
           <img class="profile-card__photo"
                src="${profile.jpg}"
-               alt="${profile.name}">
+               alt="${profile.name}"
+               width="240"
+               height="320"
+               loading="eager">
         </picture>
         <div class="profile-card__caption">${profile.name}</div>
       </div>
     </button>
   `).join("");
-
-  initSoundWarning();
 }
-
 
 // Звуки
 const flashSound = new Audio("audio/flash.mp3");
@@ -56,6 +64,8 @@ bubbleSound.preload = "auto";
 // Модальное окно для профилей
 function initSoundWarning() {
   const warning = document.getElementById("sound-warning");
+  if (!warning) return;
+
   const box = warning.querySelector(".sound-warning__box.polaroid-photo");
   const flash = document.querySelector(".flash-overlay");
   const continueBtn = document.getElementById("sound-continue");
@@ -75,12 +85,12 @@ function initSoundWarning() {
 
       flash.classList.add("active");
       flashSound.currentTime = 0;
-      flashSound.play().catch(() => { });
+      flashSound.play().catch(() => {});
       setTimeout(() => flash.classList.remove("active"), 1000);
 
       setTimeout(() => {
         ejectSound.currentTime = 0;
-        ejectSound.play().catch(() => { });
+        ejectSound.play().catch(() => {});
         box.classList.add("show");
       }, 800);
     });
@@ -99,7 +109,7 @@ function initSoundWarning() {
     box.classList.remove("show");
   });
 
-  warning?.addEventListener("click", (e) => {
+  warning.addEventListener("click", (e) => {
     if (e.target === warning) {
       warning.classList.remove("active");
       box.classList.remove("show");
@@ -232,14 +242,20 @@ function downloadCSV(token) {
     });
 }
 
+function saveToken(token) {
+  sessionStorage.setItem("token_validated", token);
+}
+
 // Запуск
 document.addEventListener("DOMContentLoaded", () => {
- preloadImages();
-  renderProfiles();
+  preloadAllImages().then(() => {
+    renderProfiles();
+    initSoundWarning();
+  });
+
   initThemeToggle();
 
   const savedToken = sessionStorage.getItem("token_validated");
-
   if (savedToken) {
     downloadCSV(savedToken);
   }
