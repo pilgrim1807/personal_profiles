@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from backend.views import pages, submit, answers, auth, debug
 
@@ -31,23 +31,7 @@ app.include_router(debug.router, prefix="/api/debug")
 async def healthcheck():
     return JSONResponse({"status": "ok"})
 
-# Корневой маршрут
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return """
-    <html>
-        <head><title>Personal Applications API</title></head>
-        <body>
-            <h1>✅ API работает</h1>
-            <p>Добро пожаловать! Доступные маршруты:</p>
-            <ul>
-                <li><a href="/api/pages">/api/pages</a></li>
-                <li><a href="/api/submit">/api/submit</a></li>
-                <li><a href="/api/answers">/api/answers</a></li>
-                <li><a href="/api/auth">/api/auth</a></li>
-                <li><a href="/api/debug">/api/debug</a></li>
-                <li><a href="/healthz">/healthz</a> (health check)</li>
-            </ul>
-        </body>
-    </html>
-    """
+# Редирект с / на /api/pages/
+@app.get("/", include_in_schema=False)
+async def redirect_to_pages():
+    return RedirectResponse(url="/api/pages/")
