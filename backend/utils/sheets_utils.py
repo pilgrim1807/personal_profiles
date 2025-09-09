@@ -1,6 +1,4 @@
-import base64
 import os
-import json
 import logging
 import certifi
 import requests
@@ -18,7 +16,7 @@ SCOPE = [
 ]
 
 SHEET_ID = os.getenv("SHEET_ID", "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA")
-CREDENTIALS_PATH = os.path.join(os.path.dirname(__file__), "../../credentials.json")
+CREDENTIALS_PATH = os.environ["GOOGLE_CREDENTIALS_PATH"]
 
 credentials: Optional[Credentials] = None
 gc: Optional[gspread.Client] = None
@@ -34,20 +32,15 @@ def _build_gspread_session() -> requests.Session:
 def _authorize_gspread() -> Optional[gspread.Client]:
     global credentials, gc
     try:
-        creds_b64 = os.getenv("GOOGLE_CREDENTIALS")
-        if creds_b64:
-            decoded = base64.b64decode(creds_b64).decode("utf-8")
-            credentials = Credentials.from_service_account_info(json.loads(decoded), scopes=SCOPE)
-        else:
-            credentials = Credentials.from_service_account_file(CREDENTIALS_PATH, scopes=SCOPE)
-
+        credentials = Credentials.from_service_account_file(CREDENTIALS_PATH, scopes=SCOPE)
         gc = gspread.authorize(credentials)
         gc.session = _build_gspread_session()
-        logger.info("✅ gspread авторизован")
+        logger.info("✅ gspread авторизован через GOOGLE_CREDENTIALS_PATH")
         return gc
     except Exception as e:
         logger.error(f"❌ Авторизация gspread провалена: {e}")
         return None
+
 
 def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
     global credentials, gc, worksheet
