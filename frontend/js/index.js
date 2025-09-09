@@ -7,6 +7,17 @@ const PROFILES = [
   { name: "Воваха", jpg: "assets/names/vovaha.jpg", webp: "assets/names/vovaha.webp", className: "vovaha" }
 ];
 
+// Предзагрузка изображений
+function preloadImages() {
+  PROFILES.forEach(p => {
+    const imgWebp = new Image();
+    imgWebp.src = p.webp;
+
+    const imgJpg = new Image();
+    imgJpg.src = p.jpg;
+  });
+}
+
 // Рендеринг карточек
 function renderProfiles() {
   const list = document.getElementById("profiles-list");
@@ -21,8 +32,7 @@ function renderProfiles() {
           <source srcset="${profile.webp}" type="image/webp">
           <img class="profile-card__photo"
                src="${profile.jpg}"
-               alt="${profile.name}"
-               loading="lazy">
+               alt="${profile.name}">
         </picture>
         <div class="profile-card__caption">${profile.name}</div>
       </div>
@@ -31,6 +41,7 @@ function renderProfiles() {
 
   initSoundWarning();
 }
+
 
 // Звуки
 const flashSound = new Audio("audio/flash.mp3");
@@ -223,6 +234,7 @@ function downloadCSV(token) {
 
 // Запуск
 document.addEventListener("DOMContentLoaded", () => {
+ preloadImages();
   renderProfiles();
   initThemeToggle();
 

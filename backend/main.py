@@ -1,7 +1,6 @@
-# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 
 from backend.views import pages, submit, answers, auth, debug
 
@@ -14,13 +13,13 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # На проде: ["https://frontend.com"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Подключение роутеров с префиксами (по желанию)
+# Подключение роутеров
 app.include_router(pages.router, prefix="/api/pages")
 app.include_router(submit.router, prefix="/api/submit")
 app.include_router(answers.router, prefix="/api/answers")
@@ -31,3 +30,24 @@ app.include_router(debug.router, prefix="/api/debug")
 @app.get("/healthz")
 async def healthcheck():
     return JSONResponse({"status": "ok"})
+
+# Корневой маршрут
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    return """
+    <html>
+        <head><title>Personal Applications API</title></head>
+        <body>
+            <h1>✅ API работает</h1>
+            <p>Добро пожаловать! Доступные маршруты:</p>
+            <ul>
+                <li><a href="/api/pages">/api/pages</a></li>
+                <li><a href="/api/submit">/api/submit</a></li>
+                <li><a href="/api/answers">/api/answers</a></li>
+                <li><a href="/api/auth">/api/auth</a></li>
+                <li><a href="/api/debug">/api/debug</a></li>
+                <li><a href="/healthz">/healthz</a> (health check)</li>
+            </ul>
+        </body>
+    </html>
+    """
