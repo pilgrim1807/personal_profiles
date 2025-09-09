@@ -20,9 +20,7 @@ def _ensure_db() -> None:
     conn.commit()
     conn.close()
 
-
 _ensure_db()
-
 
 def save_answers_to_db(username: str, parsed: list, timestamp: str) -> None:
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)

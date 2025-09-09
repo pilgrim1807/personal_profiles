@@ -15,6 +15,7 @@ from backend.utils.sheets_utils import (
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+
 @router.post("/submit")
 async def submit_answers(
     username: str = Form(...),
@@ -28,11 +29,13 @@ async def submit_answers(
         parsed = json.loads(answers)
         if not isinstance(parsed, list):
             raise ValueError("Поле 'answers' должно быть массивом объектов {question, answer}")
+
         logger.info(f"📩 ▶️ SUBMIT от {username}, {len(parsed)} ответов:")
         for i, item in enumerate(parsed, 1):
             logger.info(f"  Q{i}: {item.get('question')} → {item.get('answer')}")
-        save_answers_to_db(username, parsed, now)
 
+        # Сохраняем в SQLite
+        save_answers_to_db(username, parsed, now)
 
         # Работа с Google Sheets
         sheets_ok = False
@@ -44,24 +47,24 @@ async def submit_answers(
             try:
                 tab_used = ws.title
                 col = find_next_available_column(ws)
+
+                # Имя и дата
                 ws.update_cell(1, col, username)
                 ws.update_cell(2, col, now)
 
+                # Подготовка пар: вопрос -> ответ
                 updates = []
                 for i, item in enumerate(parsed):
                     question = item.get("question", f"Q{i+1}")
-                    raw_ans = item.get("answer", "")
-                    answer = (
-                        "да" if raw_ans == "yes"
-                        else "нет" if raw_ans == "no"
-                        else f"нет ({raw_ans})" if raw_ans
-                        else "нет"
-                    )
+                    answer = item.get("answer", "")
+
                     row_q = 3 + i * 2
                     row_a = row_q + 1
+
                     updates.append({"range": rowcol_to_a1(row_q, col), "values": [[question]]})
                     updates.append({"range": rowcol_to_a1(row_a, col), "values": [[answer]]})
 
+                # Обновляем таблицу
                 if updates and not safe_batch_update(ws, updates):
                     raise Exception("Ошибка при записи в Google Таблицу")
 

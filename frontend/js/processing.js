@@ -1,27 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // Проверка: завершён ли тест
+  if (!localStorage.getItem("test_finished")) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // Получаем основные DOM-элементы
   const btn = document.getElementById("bubble-btn");
+  const tokenInput = document.getElementById("token-input");
   const tokenWrapper = document.getElementById("token-wrapper");
 
-  if (!btn || !tokenWrapper) return;
+  if (!btn || !tokenInput || !tokenWrapper) return;
+
 
   tokenWrapper.style.display = "none";
   btn.style.display = "none";
 
+  // Показываем пузырь-модалку
   showBubbleModal(() => {
     btn.style.display = "inline-block";
     btn.classList.remove("icon-only");
     btn.classList.add("bubble-download", "visible");
-
-    if (!localStorage.getItem("test_finished")) {
-      window.location.href = "index.html";
-    }
   });
 });
 
 
-/* ---------- МОДАЛКА ---------- */
+/* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
+
 function showBubbleModal(onClose) {
-  document.getElementById("bubble-modal")?.remove();
+  const existingModal = document.getElementById("bubble-modal");
+  if (existingModal) existingModal.remove();
 
   const bubbleMsg = createModalBubble();
   const popSound = new Audio("audio/bubble.mp3");
@@ -35,11 +43,13 @@ function showBubbleModal(onClose) {
     bubbleMsg.addEventListener(
       "animationend",
       () => {
-        document.getElementById("bubble-modal")?.remove();
-        const btn = document.getElementById("bubble-btn");
-        btn.classList.remove("icon-only");
-        btn.classList.add("bubble-download", "visible");
-        if (typeof onClose === "function") onClose();
+        const modal = document.getElementById("bubble-modal");
+        if (modal) modal.remove();
+        if (typeof onClose === "function") {
+          onClose();
+        } else {
+          window.location.href = "processing.html";
+        }
       },
       { once: true }
     );
@@ -55,7 +65,7 @@ document.getElementById("bubble-btn")?.addEventListener("click", () => {
   const popSound = new Audio("audio/bubble.mp3");
 
   popSound.currentTime = 0;
-  popSound.play().catch(() => {});
+  popSound.play().catch(() => { });
 
   btn.classList.add("pop");
   createSplashes(btn);
@@ -65,8 +75,8 @@ document.getElementById("bubble-btn")?.addEventListener("click", () => {
     () => {
       btn.classList.remove("pop");
 
-      if (token && localStorage.getItem("token_validated") === token) {
-        downloadCSV(token);
+      if (token && getToken() === token) {
+        downloadCSV();
         return;
       }
 
@@ -79,14 +89,27 @@ document.getElementById("bubble-btn")?.addEventListener("click", () => {
 });
 
 /* ---------- СКАЧИВАНИЕ CSV ---------- */
-function downloadCSV(token) {
-  fetch(window.location.origin + "/answers.csv", {
+function downloadCSV() {
+  const token = getToken();
+  if (!token) {
+    showTokenMessage("⛔ Токен не найден. Повторите ввод.", false);
+    return;
+  }
+
+  const loader = showLoader();
+
+  fetch("/answers.csv", {
     headers: {
       Authorization: "Bearer " + token
     }
   })
     .then((res) => {
-      if (!res.ok) throw new Error("Ошибка доступа");
+      if (res.status === 403) {
+        throw new Error("Неверный токен");
+      }
+      if (!res.ok) {
+        throw new Error("Ошибка доступа");
+      }
       return res.blob();
     })
     .then((blob) => {
@@ -96,12 +119,39 @@ function downloadCSV(token) {
       a.download = "answers.csv";
       a.click();
       URL.revokeObjectURL(url);
+
+      // Удаляем токен после загрузки
+      sessionStorage.removeItem("token_validated");
     })
     .catch((err) => {
       showTokenMessage("⛔ Ошибка при скачивании: " + err.message, false);
+    })
+    .finally(() => {
+      hideLoader(loader);
     });
 }
 
+/* ---------- ХРАНЕНИЕ ТОКЕНА ---------- */
+function saveToken(token) {
+  sessionStorage.setItem("token_validated", token);
+}
+
+function getToken() {
+  return sessionStorage.getItem("token_validated");
+}
+
+/* ---------- ЛОАДЕР ---------- */
+function showLoader() {
+  const loader = document.createElement("div");
+  loader.className = "loader-overlay";
+  loader.innerHTML = `<div class="spinner"></div>`;
+  document.body.appendChild(loader);
+  return loader;
+}
+
+function hideLoader(loader) {
+  if (loader) loader.remove();
+}
 
 /* ---------- ВВОД ТОКЕНА ---------- */
 document.getElementById("token-input").addEventListener("keypress", (e) => {
@@ -120,19 +170,18 @@ document.getElementById("token-input").addEventListener("keypress", (e) => {
       if (!res.ok) throw new Error("invalid");
       return res.json();
     })
-  .then(() => {
-  localStorage.setItem("token_validated", token);  // 💾 сохраняем токен
-  showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
 
-  // Автоматическая загрузка CSV
-  setTimeout(() => {
-    downloadCSV(token);
-  }, 1600);
-})
+    .then(() => {
+      saveToken(token);
+      showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
+      setTimeout(() => {
+        downloadCSV();
+      }, 1600);
+    })
 
-  .catch(() => {
-    showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
-  });
+    .catch(() => {
+      showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
+    });
 });
 
 /* ---------- СООБЩЕНИЕ ВМЕСТО ИНПУТА ---------- */
@@ -272,7 +321,6 @@ function createModalBubble() {
       <text font-size="30" text-anchor="middle" dy="3.0em" class="autoscale depth-sync" data-max="38">
         <textPath href="#arcBottom" startOffset="50%">
           <tspan class="gradient-text">Лопни пузырь, чтобы продолжить</tspan>
-  
         </textPath>
       </text>
       <text font-size="28" text-anchor="middle" dy="4.6em" class="autoscale depth-sync" data-max="36">
@@ -310,5 +358,3 @@ function createModalBubble() {
 
   return msg;
 }
-
-

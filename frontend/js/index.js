@@ -195,12 +195,16 @@ function createSplash(x, y, hue, size) {
 }
 
 function downloadCSV(token) {
-  fetch(window.location.origin + "/answers.csv", {
+  fetch("/answers.csv", {
     headers: {
-      Authorization: "Bearer " + token
+      "Authorization": "Bearer " + token
     }
   })
     .then((res) => {
+      if (res.status === 403) {
+        sessionStorage.removeItem("token_validated");
+        throw new Error("Неверный токен");
+      }
       if (!res.ok) throw new Error("Ошибка доступа");
       return res.blob();
     })
@@ -218,18 +222,14 @@ function downloadCSV(token) {
 }
 
 // Запуск
-
 document.addEventListener("DOMContentLoaded", () => {
   renderProfiles();
   initThemeToggle();
 
-  const savedToken = localStorage.getItem("token_validated");
+  const savedToken = sessionStorage.getItem("token_validated");
+
   if (savedToken) {
-    try {
-      downloadCSV(savedToken);
-    } catch (e) {
-      showMessageInsteadOfInput("⛔ Ошибка при загрузке CSV", false);
-    }
+    downloadCSV(savedToken);
   }
 
   const btn = document.getElementById("bubble-btn");
@@ -270,9 +270,11 @@ document.addEventListener("DOMContentLoaded", () => {
           return res.json();
         })
         .then(() => {
-          localStorage.setItem("token_validated", token);
+          saveToken(token);
           showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
-          setTimeout(() => downloadCSV(token), 1600);
+          setTimeout(() => {
+            downloadCSV(token);
+          }, 1600);
         })
         .catch(() => {
           showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
