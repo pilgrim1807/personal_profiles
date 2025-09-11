@@ -108,22 +108,24 @@ def upload_answers_to_sheet_formatted(db_path=DB_PATH):
             if username not in created_at_map:
                 created_at_map[username] = created_at
 
-        # Уникальные вопросы
+        # Уникальные вопросы (нормализованные)
         all_questions = []
         seen = set()
         for answers in grouped.values():
             for q, _ in answers:
-                if q not in seen:
-                    seen.add(q)
+                norm_q = q.strip().lower()
+                if norm_q not in seen:
+                    seen.add(norm_q)
                     all_questions.append(q)
 
-        # Формирование строк
+        # Заголовки
         header_row = []
         date_row = []
         for username in grouped:
             header_row.extend([username, ""])
             date_row.extend([created_at_map[username], ""])
 
+        # Ответы
         data_rows = []
         for question in all_questions:
             row = [question]
@@ -132,32 +134,98 @@ def upload_answers_to_sheet_formatted(db_path=DB_PATH):
                 row.extend([answers_dict.get(question, ""), ""])
             data_rows.append(row)
 
+        # Финальный массив строк
         all_rows = [
             [""] + header_row,
             [""] + date_row,
             *data_rows
         ]
 
-        # Очистка и загрузка данных
+        # Очистка таблицы
         worksheet.clear()
 
+        # Загрузка строк
         updates = []
         for r_idx, row in enumerate(all_rows, start=1):
-            end_col = chr(65 + len(row) - 1)  # ограничение: до колонки Z
-            range_a1 = f"A{r_idx}:{end_col}{r_idx}"
-            updates.append({
-                "range": range_a1,
-                "values": [row]
-            })
+            start_a1 = rca1(r_idx, 1)
+            end_a1 = rca1(r_idx, len(row))
+            range_a1 = f"{start_a1}:{end_a1}"
+            updates.append({"range": range_a1, "values": [row]})
 
         worksheet.batch_update(updates, value_input_option="USER_ENTERED")
         logger.info(f"✅ Успешно загружено {len(all_rows)} строк в Google Sheets")
+
+        # 📐 Форматирование и объединение ячеек
+        merge_requests = []
+        format_requests = []
+
+        cell_format = {
+            "horizontalAlignment": "CENTER",
+            "verticalAlignment": "MIDDLE",
+            "wrapStrategy": "WRAP"
+        }
+
+        col = 2  # начинаем с колонки B
+        for username in grouped:
+            # Объединение ячеек с именем пользователя
+            merge_requests.append({
+                "mergeCells": {
+                    "range": {
+                        "sheetId": worksheet._properties["sheetId"],
+                        "startRowIndex": 0,
+                        "endRowIndex": 1,
+                        "startColumnIndex": col - 1,
+                        "endColumnIndex": col + 1
+                    },
+                    "mergeType": "MERGE_ALL"
+                }
+            })
+
+            # Центрирование для имени и даты
+            for row in [0, 1]:
+                format_requests.append({
+                    "repeatCell": {
+                        "range": {
+                            "sheetId": worksheet._properties["sheetId"],
+                            "startRowIndex": row,
+                            "endRowIndex": row + 1,
+                            "startColumnIndex": col - 1,
+                            "endColumnIndex": col + 1
+                        },
+                        "cell": {"userEnteredFormat": cell_format},
+                        "fields": "userEnteredFormat(horizontalAlignment, verticalAlignment, wrapStrategy)"
+                    }
+                })
+
+            col += 2
+
+        # Центрирование для всех строк с вопросами и ответами
+        format_requests.append({
+            "repeatCell": {
+                "range": {
+                    "sheetId": worksheet._properties["sheetId"],
+                    "startRowIndex": 2,
+                    "endRowIndex": 2 + len(data_rows),
+                    "startColumnIndex": 0,
+                    "endColumnIndex": len(header_row) + 1
+                },
+                "cell": {"userEnteredFormat": cell_format},
+                "fields": "userEnteredFormat(horizontalAlignment, verticalAlignment, wrapStrategy)"
+            }
+        })
+
+        # Применяем форматирование и объединение
+        worksheet.spreadsheet.batch_update({
+            "requests": merge_requests + format_requests
+        })
+
+        logger.info("🎨 Форматирование и объединение ячеек выполнено")
 
     except Exception as e:
         logger.error(f"❌ Ошибка upload_answers_to_sheet_formatted: {e}")
 
 
-# 🔧 Утилиты (если вдруг понадобятся)
+# 🔧 Утилиты
 def find_next_available_column(ws):
     values = ws.row_values(1)
     return len(values) + 1
@@ -174,3 +242,4 @@ def safe_batch_update(ws, updates):
     except Exception as e:
         logger.error(f"Ошибка при batch_update: {e}")
         return False
+

@@ -27,12 +27,21 @@ async def submit_answers(
 
     try:
         parsed = json.loads(answers)
+
+        # 💡 Валидация структуры
         if not isinstance(parsed, list):
-            raise ValueError("Поле 'answers' должно быть массивом объектов {question, answer}")
+            raise ValueError("Поле 'answers' должно быть массивом объектов вида {question, answer}")
+
+        for i, item in enumerate(parsed):
+            if not isinstance(item, dict):
+                raise ValueError(f"Ответ #{i+1} не является объектом")
+            if "question" not in item or "answer" not in item:
+                raise ValueError(f"Ответ #{i+1} должен содержать поля 'question' и 'answer'")
 
         logger.info(f"📩 ▶️ SUBMIT от {username}, {len(parsed)} ответов:")
         for i, item in enumerate(parsed, 1):
             logger.info(f"  Q{i}: {item.get('question')} → {item.get('answer')}")
+
 
         # Сохраняем в SQLite
         save_answers_to_db(username, parsed, now)

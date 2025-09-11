@@ -1,6 +1,7 @@
 import os
 import io
 import csv
+import html
 import sqlite3
 from collections import defaultdict
 from datetime import datetime
@@ -31,7 +32,7 @@ def view_answers(request: Request):
         cur.execute("SELECT username, question, answer, created_at FROM answers ORDER BY created_at DESC")
         rows = cur.fetchall()
 
-    html = """
+    html_content = """
     <html><head><meta charset='utf-8'><title>Ответы</title>
     <style>
         body { font-family: sans-serif; padding: 20px; }
@@ -63,9 +64,18 @@ def view_answers(request: Request):
       <thead><tr><th>Имя</th><th>Вопрос</th><th>Ответ</th><th>Дата</th></tr></thead>
       <tbody id="answersTable">
     """
+
     for name, question, answer, date in rows:
-        html += f"<tr><td>{name}</td><td>{question}</td><td>{answer}</td><td>{date}</td></tr>"
-    html += """
+        html_content += (
+            f"<tr>"
+            f"<td>{html.escape(name)}</td>"
+            f"<td>{html.escape(question)}</td>"
+            f"<td>{html.escape(answer)}</td>"
+            f"<td>{html.escape(date)}</td>"
+            f"</tr>"
+        )
+
+    html_content += """
       </tbody>
     </table>
 
@@ -105,7 +115,8 @@ def view_answers(request: Request):
 
     </body></html>
     """
-    return HTMLResponse(content=html)
+    return HTMLResponse(content=html_content)
+
 
 @router.get("/answers.csv")
 def export_answers_csv(request: Request):

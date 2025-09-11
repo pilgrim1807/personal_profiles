@@ -1,8 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
-
-<!DOCTYPE html>
-<html lang="ru">
+<html lang="ru-RU">
 
 <head>
   <meta charset="UTF-8">
@@ -32,11 +29,11 @@
   <meta name="apple-mobile-web-app-title" content="ПсихоТест">
 
   <!-- Preload Fonts -->
-  <link rel="preload" href="fonts/Oranienbaum-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/Oranienbaum-Regular.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="css/fonts.css">
-  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="/static/css/fonts.css">
+  <link rel="stylesheet" href="/static/css/profile.css">
 
   <!-- Structured Data -->
   <script type="application/ld+json">
@@ -57,7 +54,9 @@
 
 <body>
   <header class="profile-empty"></header>
-  <main id="profile-app"></main>
+  <main id="profile-app">
+    <noscript>Включите JavaScript для просмотра анкет.</noscript>
+  </main>
   <footer class="profile-footer"></footer>
 
   <!-- Подключение JS -->
