@@ -1,4 +1,17 @@
+// Глобальная переменная для переиспользуемого звука
+let bubbleSound = null;
+
+// Предзагрузка звука
+function preloadBubbleSound() {
+  bubbleSound = new Audio("/static/audio/bubble.mp3");
+  bubbleSound.preload = "auto";
+  bubbleSound.load();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Предзагружаем звук один раз
+  preloadBubbleSound();
+
   // Проверка: завершён ли тест
   if (!localStorage.getItem("test_finished")) {
     window.location.href = "index.html";
@@ -12,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!btn || !tokenInput || !tokenWrapper) return;
 
-
   tokenWrapper.style.display = "none";
   btn.style.display = "none";
 
@@ -22,20 +34,80 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.remove("icon-only");
     btn.classList.add("bubble-download", "visible");
   });
+
+  // Обработчик кнопки
+  btn.addEventListener("click", () => {
+    const token = tokenInput?.value?.trim();
+
+    if (bubbleSound) {
+      bubbleSound.currentTime = 0;
+      bubbleSound.play().catch(() => {});
+    }
+
+    btn.classList.add("pop");
+    createSplashes(btn);
+
+    btn.addEventListener(
+      "animationend",
+      () => {
+        btn.classList.remove("pop");
+
+        if (token && getToken() === token) {
+          downloadCSV();
+          return;
+        }
+
+        btn.classList.add("icon-only");
+        tokenWrapper.style.display = "block";
+        tokenInput.focus();
+      },
+      { once: true }
+    );
+  });
+
+  // Обработчик ввода токена
+  tokenInput.addEventListener("keypress", (e) => {
+    if (e.key !== "Enter") return;
+
+    const token = e.target.value.trim();
+    if (!token) return;
+
+    const formData = new FormData();
+    formData.append("token", token);
+
+    fetch("/submit_token", {
+      method: "POST",
+      body: formData
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("invalid");
+        return res.json();
+      })
+      .then(() => {
+        saveToken(token);
+        showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
+        setTimeout(() => {
+          downloadCSV();
+        }, 1600);
+      })
+      .catch(() => {
+        showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
+      });
+  });
 });
-
 /* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
-
 function showBubbleModal(onClose) {
   const existingModal = document.getElementById("bubble-modal");
   if (existingModal) existingModal.remove();
 
   const bubbleMsg = createModalBubble();
-  const popSound = new Audio("audio/bubble.mp3");
 
   bubbleMsg.addEventListener("click", () => {
-    popSound.currentTime = 0;
-    popSound.play();
+    if (bubbleSound) {
+      bubbleSound.currentTime = 0;
+      bubbleSound.play().catch(() => {});
+    }
+
     bubbleMsg.classList.add("pop");
     createSplashes(bubbleMsg);
 
@@ -55,38 +127,6 @@ function showBubbleModal(onClose) {
   });
 }
 
-/* ---------- КНОПКА-ПУЗЫРЬ ---------- */
-document.getElementById("bubble-btn")?.addEventListener("click", () => {
-  const btn = document.getElementById("bubble-btn");
-  const tokenInput = document.getElementById("token-input");
-  const tokenWrapper = document.getElementById("token-wrapper");
-  const token = tokenInput?.value?.trim();
-  const popSound = new Audio("audio/bubble.mp3");
-
-  popSound.currentTime = 0;
-  popSound.play().catch(() => { });
-
-  btn.classList.add("pop");
-  createSplashes(btn);
-
-  btn.addEventListener(
-    "animationend",
-    () => {
-      btn.classList.remove("pop");
-
-      if (token && getToken() === token) {
-        downloadCSV();
-        return;
-      }
-
-      btn.classList.add("icon-only");
-      tokenWrapper.style.display = "block";
-      tokenInput.focus();
-    },
-    { once: true }
-  );
-});
-
 /* ---------- СКАЧИВАНИЕ CSV ---------- */
 function downloadCSV() {
   const token = getToken();
@@ -103,12 +143,8 @@ function downloadCSV() {
     }
   })
     .then((res) => {
-      if (res.status === 403) {
-        throw new Error("Неверный токен");
-      }
-      if (!res.ok) {
-        throw new Error("Ошибка доступа");
-      }
+      if (res.status === 403) throw new Error("Неверный токен");
+      if (!res.ok) throw new Error("Ошибка доступа");
       return res.blob();
     })
     .then((blob) => {
@@ -119,7 +155,6 @@ function downloadCSV() {
       a.click();
       URL.revokeObjectURL(url);
 
-      // Удаляем токен после загрузки
       sessionStorage.removeItem("token_validated");
     })
     .catch((err) => {
@@ -134,7 +169,6 @@ function downloadCSV() {
 function saveToken(token) {
   sessionStorage.setItem("token_validated", token);
 }
-
 function getToken() {
   return sessionStorage.getItem("token_validated");
 }
@@ -147,48 +181,15 @@ function showLoader() {
   document.body.appendChild(loader);
   return loader;
 }
-
 function hideLoader(loader) {
   if (loader) loader.remove();
 }
-
-/* ---------- ВВОД ТОКЕНА ---------- */
-document.getElementById("token-input")?.addEventListener("keypress", (e) => {
-  if (e.key !== "Enter") return;
-
-  const token = e.target.value.trim();
-  if (!token) return;
-
-  const formData = new FormData();
-  formData.append("token", token);
-
-  fetch("/submit_token", {
-    method: "POST",
-    body: formData
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("invalid");
-      return res.json();
-    })
-    .then(() => {
-      saveToken(token);
-      showMessageInsteadOfInput("✅ Токен принят. Ответ сохранён.", true);
-      setTimeout(() => {
-        downloadCSV();
-      }, 1600);
-    })
-    .catch(() => {
-      showMessageInsteadOfInput("⛔ Неверный токен! Попробуй снова.", false);
-    });
-});
-
 
 /* ---------- СООБЩЕНИЕ ВМЕСТО ИНПУТА ---------- */
 function showMessageInsteadOfInput(msg, success = false) {
   const wrapper = document.getElementById("token-wrapper");
   const input = document.getElementById("token-input");
 
-  // создаём или находим сообщение
   let note = wrapper.querySelector(".token-message");
   if (!note) {
     note = document.createElement("div");
@@ -282,8 +283,6 @@ function createSplash(x, y, hue, size) {
   document.body.appendChild(d);
   d.addEventListener("animationend", () => d.remove());
 }
-
-/* ---------- РЕНДЕР МОДАЛКИ ---------- */
 function createModalBubble() {
   const modal = document.createElement("div");
   modal.id = "bubble-modal";
@@ -357,3 +356,5 @@ function createModalBubble() {
 
   return msg;
 }
+
+

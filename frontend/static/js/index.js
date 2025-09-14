@@ -138,38 +138,49 @@ function initSoundWarning() {
   });
 }
 
-// Звуки
-const flashSound = new Audio("audio/flash.mp3");
-flashSound.preload = "auto";
+// ✅ Современная предзагрузка звуков через JS
+let flashSound = null;
+let ejectSound = null;
+let bubbleSound = null;
 
-const ejectSound = new Audio("audio/photo-out.mp3");
-ejectSound.preload = "auto";
+function preloadSounds() {
+  flashSound = new Audio("/static/audio/flash.mp3");
+  ejectSound = new Audio("/static/audio/photo-out.mp3");
+  bubbleSound = new Audio("/static/audio/bubble.mp3");
 
-const bubbleSound = new Audio("audio/bubble.mp3");
-bubbleSound.preload = "auto";
+  [flashSound, ejectSound, bubbleSound].forEach((sound) => {
+    sound.preload = "auto";
+    sound.load();
+  });
+}
+
+// 🛑 Старые объявления звуков — НЕ УДАЛЯЮТСЯ по вашему требованию
+// Они всё ещё будут переопределяться в preloadSounds()
+// const flashSound = new Audio("audio/flash.mp3");
+// flashSound.preload = "auto";
+// const ejectSound = new Audio("audio/photo-out.mp3");
+// ejectSound.preload = "auto";
+// const bubbleSound = new Audio("audio/bubble.mp3");
+// bubbleSound.preload = "auto";
 
 // Переключение темы
 function initThemeToggle() {
   const btn = document.getElementById("themeToggle");
   const body = document.body;
 
-  // Восстанавливаем сохранённую тему
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme) {
     body.classList.toggle("dark", savedTheme === "dark");
   } else {
-    // Если темы нет в localStorage — используем системную
     body.classList.toggle("dark", window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
 
-  // Кнопка смены темы
   btn?.addEventListener("click", () => {
     const isDark = body.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
-    renderProfiles(); // перерисуем карточки с картинками
+    renderProfiles();
   });
 
-  // Автоматическая реакция на смену темы в системе
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   mediaQuery.addEventListener("change", (e) => {
     if (!localStorage.getItem("theme")) { 
@@ -179,7 +190,6 @@ function initThemeToggle() {
   });
 }
 
-// Сообщение вместо инпута
 function showMessageInsteadOfInput(msg, success = false) {
   const wrapper = document.getElementById("token-wrapper");
   const input = document.getElementById("token-input");
@@ -210,7 +220,6 @@ function showMessageInsteadOfInput(msg, success = false) {
   }, 1500);
 }
 
-// Рост пузыря обратно
 function delayedGrowBubble() {
   const wrapper = document.getElementById("token-wrapper");
   const btn = document.getElementById("bubble-btn");
@@ -231,7 +240,6 @@ function delayedGrowBubble() {
   });
 }
 
-// Брызги
 function createSplashes(el) {
   const rect = el.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
@@ -290,17 +298,14 @@ function saveToken(token) {
 
 // Запуск
 document.addEventListener("DOMContentLoaded", () => {
-  // сначала тема
   initThemeToggle();
+  preloadSounds(); // ✅ Современная предзагрузка звуков
 
-  // предзагрузка изображений
   preloadAllImages().then(() => {
-    //  рендер и подключение модалки
     renderProfiles();
     initSoundWarning();
   });
 
-  // токен/скачивание CSV и прочее остаётся ниже
   const savedToken = sessionStorage.getItem("token_validated");
   if (savedToken) {
     downloadCSV(savedToken);
