@@ -1,5 +1,6 @@
 {
-  "python.analysis.extraPaths": ["./backend"],
-  "python.defaultInterpreterPath": "backend/venv/bin/python",
-  "python.envFile": "${workspaceFolder}/backend/.env"
+    "python.defaultInterpreterPath": "/home/anastasiya_9224/My_projects/twoFifths/personal/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "/home/anastasiya_9224/My_projects/twoFifths/personal/venv/lib/python3.12/site-packages"
+    ]
 }
