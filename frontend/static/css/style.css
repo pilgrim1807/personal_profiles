@@ -179,7 +179,7 @@ body {
 
 /* подпись */
 .profile-card__caption {
-  font-family: 'Caveat', 'Permanent Marker', 'Pacifico', cursive;
+  font-family: 'Anime-ace', sans-serif;
   font-size: clamp(1rem, 3vw, 1.4rem);
   color: #30220a;
   letter-spacing: 0.07em;
