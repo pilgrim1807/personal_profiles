@@ -5,7 +5,7 @@ from starlette.responses import Response
 
 FRONTEND_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "../../frontend"))
 INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
-FAVICON_PATH = os.path.join(FRONTEND_DIR, "assets", "favicons", "favicon.ico")
+FAVICON_PATH = os.path.join(FRONTEND_DIR, "static", "assets", "favicons", "favicon.ico")
 
 router = APIRouter()
 
