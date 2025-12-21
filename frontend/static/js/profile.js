@@ -372,12 +372,11 @@ async function submitResults(profile, answers) {
       formData.append(`photos`, blob, `photo_${i}.jpg`);
     });
 
-    const res = await fetch("https://personal-applications-2-5.onrender.com/api/submit/submit", {
-      method: "POST",
-      body: formData,
-      keepalive: true,
-    });
-
+const res = await fetch("/submit", {
+  method: "POST",
+  body: formData,
+  keepalive: true,
+});
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "");

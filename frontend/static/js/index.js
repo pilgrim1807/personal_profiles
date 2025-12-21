@@ -138,7 +138,7 @@ function initSoundWarning() {
   });
 }
 
-// ✅ Современная предзагрузка звуков через JS
+//  предзагрузка звуков через JS
 let flashSound = null;
 let ejectSound = null;
 let bubbleSound = null;
@@ -153,15 +153,6 @@ function preloadSounds() {
     sound.load();
   });
 }
-
-// 🛑 Старые объявления звуков — НЕ УДАЛЯЮТСЯ по вашему требованию
-// Они всё ещё будут переопределяться в preloadSounds()
-// const flashSound = new Audio("audio/flash.mp3");
-// flashSound.preload = "auto";
-// const ejectSound = new Audio("audio/photo-out.mp3");
-// ejectSound.preload = "auto";
-// const bubbleSound = new Audio("audio/bubble.mp3");
-// bubbleSound.preload = "auto";
 
 // Переключение темы
 function initThemeToggle() {
