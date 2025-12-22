@@ -372,7 +372,8 @@ async function submitResults(profile, answers) {
       formData.append(`photos`, blob, `photo_${i}.jpg`);
     });
 
-const res = await fetch("/submit", {
+const res = await fetch("/api/submit", {
+
   method: "POST",
   body: formData,
   keepalive: true,
