@@ -27,7 +27,7 @@ app.add_middleware(
 
 # Маршруты
 app.include_router(pages.router)
-app.include_router(submit.router)
+app.include_router(submit.router, prefix="/api")
 app.include_router(answers.router)
 app.include_router(auth.router)
 app.include_router(debug.router)
