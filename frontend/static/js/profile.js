@@ -94,12 +94,12 @@ function setDynamicMeta(profile) {
   }
 
   // fallback: favicon.ico
-if (!profile.favicon) {
-  const defaultFavicon = document.createElement("link");
-  defaultFavicon.rel = "icon";
-  defaultFavicon.href = "/favicon.ico";
-  document.head.appendChild(defaultFavicon);
-}
+  if (!profile.favicon) {
+    const defaultFavicon = document.createElement("link");
+    defaultFavicon.rel = "icon";
+    defaultFavicon.href = "/favicon.ico";
+    document.head.appendChild(defaultFavicon);
+  }
 
   // Apple Touch Icon
   if (profile.appleTouchIcon) {
@@ -268,7 +268,8 @@ function addQuestionListeners(profile, idx, answers) {
         if (submitBtn) submitBtn.disabled = true;
         setTimeout(() => customInput.focus(), 100);
       }
-      saveProgress(profile.caption, idx, answers);
+      saveProgress(profile.name, idx, answers);
+
     });
   });
 
@@ -283,7 +284,8 @@ function addQuestionListeners(profile, idx, answers) {
       if (nextBtn) nextBtn.disabled = true;
       if (submitBtn) submitBtn.disabled = true;
     }
-    saveProgress(profile.caption, idx, answers);
+    saveProgress(profile.name, idx, answers);
+
   });
 
   // Назад
@@ -291,7 +293,8 @@ function addQuestionListeners(profile, idx, answers) {
     prevBtn.addEventListener("click", () => {
       playSound("audio/projector.mp3");
       if (idx > 0) showQuestion(profile, idx - 1, answers);
-      saveProgress(profile.caption, idx - 1, answers);
+      saveProgress(profile.name, idx - 1, answers);
+
     });
   }
 
@@ -309,7 +312,8 @@ function addQuestionListeners(profile, idx, answers) {
     }
 
     answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-    saveProgress(profile.caption, idx, answers);
+    saveProgress(profile.name, idx, answers);
+
 
     if (idx < n - 1) {
       playSound("audio/projector.mp3");
@@ -327,9 +331,10 @@ function addQuestionListeners(profile, idx, answers) {
         transitioned = true;
         const ok = await sendingPromise;
         if (ok) {
-          localStorage.removeItem(`progress_${profile.caption}`);
+          localStorage.removeItem(`progress_${profile.name}`);
           localStorage.setItem("test_finished", "true");
-          window.location.href = `/processing.html?name=${encodeURIComponent(profile.caption)}`;
+          window.location.href = `/processing.html?name=${encodeURIComponent(profile.name)}`;
+
         } else {
           submitted = false;
           alert("Ошибка при отправке. Попробуй снова.");
@@ -355,7 +360,7 @@ async function submitResults(profile, answers) {
   try {
     const formData = new FormData();
 
-    formData.append("username", profile.caption);
+    formData.append("username", profile.name);
     formData.append(
       "answers",
       JSON.stringify(
@@ -366,18 +371,17 @@ async function submitResults(profile, answers) {
       )
     );
 
-    const blobs = await preparePhotoBlobs(profile);
-    if (blobs.photo) formData.append("photo", blobs.photo, "photo.jpg");
-    (blobs.photos || []).forEach((blob, i) => {
-      formData.append(`photos`, blob, `photo_${i}.jpg`);
+    // 🔍 ЛОГ — ВНЕ fetch
+    console.log("📤 SUBMIT:", {
+      username: profile.name,
+      answersCount: answers.length
     });
 
-const res = await fetch("/api/submit", {
-
-  method: "POST",
-  body: formData,
-  keepalive: true,
-});
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      body: formData,
+      // keepalive: true  // 🔧 пока оставь выключенным
+    });
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => "");
@@ -395,39 +399,11 @@ const res = await fetch("/api/submit", {
     console.error("❌ Неожиданный ответ сервера:", data);
     alert("Ошибка при отправке. Попробуй снова.");
     return false;
+
   } catch (err) {
     console.error("❌ Ошибка при отправке:", err);
     alert("Не удалось связаться с сервером 😢");
     return false;
-  }
-}
-
-// Получаем данные
-const params = new URLSearchParams(window.location.search);
-const username = params.get("name") || "Аноним";
-
-async function submitAnswers(answers) {
-  const formData = new FormData();
-  formData.append("username", username);
-  formData.append("answers", JSON.stringify(answers));
-
-  try {
-    const response = await fetch("https://personal-applications-2-5.onrender.com/api/submit/submit", {
-      method: "POST",
-      body: formData
-    });
-
-    const result = await response.json();
-    if (result.status === "ok") {
-      localStorage.setItem("test_finished", "1");
-      window.location.href = "processing.html";
-    } else {
-      console.warn("Ошибка при отправке:", result);
-      alert("Ответы сохранены локально, но не отправлены в Google Sheets.");
-    }
-  } catch (error) {
-    console.error("Ошибка при отправке:", error);
-    alert("Произошла ошибка при отправке данных. Проверьте подключение.");
   }
 }
 
@@ -555,12 +531,13 @@ window.onload = function () {
 
   // Очистка прогресса
   if (reset || localStorage.getItem("test_finished") === "true") {
-    localStorage.removeItem(`progress_${profile.caption}`);
+    localStorage.removeItem(`progress_${profile.name}`);
+
     localStorage.removeItem("test_finished");
   }
 
   // Загрузка прогресса
-  const { idx, answers } = loadProgress(profile.caption, profile.questions.length);
+  const { idx, answers } = loadProgress(profile.name, profile.questions.length);
 
   // Контейнер
   let app = document.getElementById("profile-app");
@@ -581,7 +558,7 @@ window.onload = function () {
   if (Array.isArray(profile.photos)) photos.push(...profile.photos);
 
   preloadImages(photos, () => {
-    const hasProgress = localStorage.getItem(`progress_${profile.caption}`) !== null;
+    const hasProgress = localStorage.getItem(`progress_${profile.name}`) !== null;
 
     if (!hasProgress && idx === 0) {
       showModal("flash-sound-modal");
@@ -610,5 +587,3 @@ window.onload = function () {
     }
   });
 };
-
-
