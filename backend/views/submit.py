@@ -5,6 +5,9 @@ from typing import List
 
 from fastapi import APIRouter, Form, File, UploadFile, HTTPException
 from backend.db.b_utils import save_answers_to_db
+from backend.config import DB_PATH
+print(f"📂 DB_PATH answers: {DB_PATH}")
+
 from backend.utils.sheets_utils import (
     get_sheet_first_tab,
     find_next_available_column,

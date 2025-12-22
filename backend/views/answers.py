@@ -5,12 +5,14 @@ import html
 import sqlite3
 from collections import defaultdict
 from datetime import datetime
+import logging
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
+from backend.config import DB_PATH
+logger.warning(f"📂 DB_PATH submit: {DB_PATH}")
 
-# Настройки
-DB_PATH = os.getenv("DB_PATH", os.path.join(os.path.dirname(__file__), "../../tests.db"))
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")
 if not ADMIN_TOKEN:
     raise RuntimeError("❌ Переменная окружения ADMIN_TOKEN не задана!")

@@ -1,7 +1,5 @@
 import sqlite3
-import os
-
-DB_PATH = os.getenv("DB_PATH", os.path.join(os.path.dirname(__file__), "../../tests.db"))
+from backend.config import DB_PATH
 
 def _ensure_db() -> None:
     conn = sqlite3.connect(DB_PATH)

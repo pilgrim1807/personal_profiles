@@ -9,6 +9,7 @@ from collections import defaultdict
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
 from gspread.utils import rowcol_to_a1 as rca1
+from backend.config import DB_PATH
 
 # Настройка логгирования
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ SCOPE = [
 
 SHEET_ID = os.getenv("SHEET_ID", "1BvPPrVUP2wRqT2JszTnJMgbR0ZAU1aljfX-cmI0wqVA")
 CREDENTIALS_PATH = os.environ["GOOGLE_CREDENTIALS_PATH"]
-DB_PATH = os.getenv("DB_PATH", "tests.db")
+
 
 # Глобальные объекты
 credentials: Optional[Credentials] = None
