@@ -1,18 +1,22 @@
+# backend/main.py
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parent / ".env")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-# 🔎 Проверка (временно)
+# 🔹 Загружаем .env локально
+if os.getenv("RENDER") != "true":
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent / ".env")
+
+# Проверка
 print("✅ ADMIN_TOKEN:", os.getenv("ADMIN_TOKEN"))
 print("📂 DB_PATH:", os.getenv("DB_PATH"))
-print("🔑 GOOGLE_CREDENTIALS_PATH:", os.getenv("GOOGLE_CREDENTIALS_PATH"))
+print("🔑 GOOGLE_CREDENTIALS:", "SET" if os.getenv("GOOGLE_CREDENTIALS") else "NOT SET")
+print("📄 SHEET_ID:", os.getenv("SHEET_ID"))
 
 from backend.views import pages, submit, answers, auth, debug
 

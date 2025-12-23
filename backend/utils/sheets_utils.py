@@ -34,6 +34,7 @@ worksheet: Optional[gspread.Worksheet] = None
 
 # Вспомогательные функции
 
+
 def _build_gspread_session() -> requests.Session:
     session = requests.Session()
     session.verify = certifi.where()
@@ -50,6 +51,10 @@ def _authorize_gspread() -> Optional[gspread.Client]:
 
     sheet_id = os.getenv("SHEET_ID")
     creds_json = os.getenv("GOOGLE_CREDENTIALS")
+
+    # 🔍 Диагностические логи
+    logger.info("DEBUG SHEET_ID = %r", sheet_id)
+    logger.info("DEBUG GOOGLE_CREDENTIALS_JSON SET = %s", bool(creds_json))
 
     if not sheet_id or not creds_json:
         logger.error("❌ Не заданы GOOGLE_CREDENTIALS или SHEET_ID")
@@ -74,6 +79,7 @@ def _authorize_gspread() -> Optional[gspread.Client]:
         return None
 
 # Получение первого листа
+
 
 def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
     global credentials, gc, worksheet
@@ -113,6 +119,7 @@ def get_sheet_first_tab() -> Optional[gspread.Worksheet]:
         return None
 
 # Экспорт данных из SQLite в Google Sheets (форматированный)
+
 
 def upload_answers_to_sheet_formatted(db_path=DB_PATH):
     try:
@@ -236,11 +243,14 @@ def upload_answers_to_sheet_formatted(db_path=DB_PATH):
 
 # Утилиты
 
+
 def find_next_available_column(ws):
     return len(ws.row_values(1)) + 1
 
+
 def rowcol_to_a1(row, col):
     return rca1(row, col)
+
 
 def safe_batch_update(ws, updates):
     try:
