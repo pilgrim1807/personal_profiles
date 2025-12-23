@@ -238,9 +238,9 @@ def rowcol_to_a1(row, col):
 
 def safe_batch_update(ws, updates):
     try:
-        ws.batch_update([{"range": u["range"], "values": u["values"]} for u in updates])
+        ws.batch_update(updates)
         return True
     except Exception as e:
-        logger.error(f"Ошибка при batch_update: {e}")
+        logger.exception("❌ Google Sheets batch_update error")
         return False
 
