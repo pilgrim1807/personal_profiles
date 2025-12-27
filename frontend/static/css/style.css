@@ -374,6 +374,7 @@ body.dark .footer {
   font-size: clamp(1rem, 3vw, 1.3rem);
   margin-bottom: 12px;
   font-weight: bold;
+    color: #242424;
 }
 .sound-warning__content p {
   font-size: clamp(0.85rem, 2.5vw, 1rem);

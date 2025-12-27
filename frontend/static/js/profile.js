@@ -53,14 +53,6 @@ function hideModal(id) {
   if (modal) modal.classList.add("hidden");
 }
 
-function triggerFlashWithSound() {
-  playSound("audio/projector_on.mp3");
-  const flash = document.createElement("div");
-  flash.classList.add("projector-flash");
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 1700);
-}
-
 // Прелоадинг картинок
 function preloadImages(urls, callback) {
   let loaded = 0;
@@ -215,7 +207,6 @@ function showQuestion(profile, idx, answers) {
     if (bubblesContainer) spawnBubbles(bubblesContainer);
 
     if (idx === 0) {
-      playSound("audio/projector_on.mp3");
       const flash = document.createElement("div");
       flash.classList.add("projector-flash");
       document.body.appendChild(flash);
@@ -299,53 +290,47 @@ function addQuestionListeners(profile, idx, answers) {
   }
 
   // Сабмит формы
-  form.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (submitted) return;
-    submitted = true;
+form.addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  if (submitted) return;
+  submitted = true;
 
-    const val = form.answer.value;
-    if (val === "no" && !customInput.value.trim()) {
-      customInput.focus();
+  const val = form.answer.value;
+  if (val === "no" && !customInput.value.trim()) {
+    customInput.focus();
+    submitted = false;
+    return;
+  }
+
+  answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
+  saveProgress(profile.name, idx, answers);
+
+  const sendSound = new Audio("/static/audio/send.mp3");
+  const sendingPromise = submitResults(profile, answers);
+
+  sendSound.onended = async () => {
+    const ok = await sendingPromise;
+    if (!ok) {
       submitted = false;
+      alert("Ошибка при отправке. Попробуй снова.");
       return;
     }
 
-    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-    saveProgress(profile.name, idx, answers);
+    localStorage.removeItem(`progress_${profile.name}`);
+    localStorage.setItem("test_finished", "true");
+    window.location.href =
+      `/processing.html?name=${encodeURIComponent(profile.name)}`;
+  };
 
-
-    if (idx < n - 1) {
-      playSound("audio/projector.mp3");
-      showQuestion(profile, idx + 1, answers);
-      submitted = false;
-    } else {
-      const sendSound = new Audio("audio/send.mp3");
-      sendSound.play().catch(() => { });
-
-      const sendingPromise = submitResults(profile, answers);
-
-      let transitioned = false;
-      const goToProcessing = async () => {
-        if (transitioned) return;
-        transitioned = true;
-        const ok = await sendingPromise;
-        if (ok) {
-          localStorage.removeItem(`progress_${profile.name}`);
-          localStorage.setItem("test_finished", "true");
-          window.location.href = `/processing.html?name=${encodeURIComponent(profile.name)}`;
-
-        } else {
-          submitted = false;
-          alert("Ошибка при отправке. Попробуй снова.");
-        }
-      };
-
-      sendSound.onended = goToProcessing;
-
-      setTimeout(goToProcessing, 1000);
+  sendSound.play().catch(async () => {
+    const ok = await sendingPromise;
+    if (ok) {
+      window.location.href =
+        `/processing.html?name=${encodeURIComponent(profile.name)}`;
     }
   });
+});
+
 
 
 }
@@ -477,12 +462,12 @@ function spawnBubbles(container) {
 
 // Старт
 function startProfileTest(profile, idx, answers, loader) {
-  triggerFlashWithSound();
   setTimeout(() => {
     showQuestion(profile, idx, answers);
     if (loader) loader.remove();
   }, 1700);
 }
+
 
 // Поиск профиля по slug
 function findProfileBySlug(slug) {
@@ -566,9 +551,11 @@ window.onload = function () {
       if (flashBtn) {
         flashBtn.textContent = "Начать просмотр";
         flashBtn.addEventListener("click", () => {
+          playSound("/static/audio/projector_on.mp3");
           hideModal("flash-sound-modal");
           startProfileTest(profile, 0, answers, loader);
         });
+
       } else {
         startProfileTest(profile, 0, answers, loader);
       }
@@ -578,9 +565,11 @@ window.onload = function () {
       if (introBtn) {
         introBtn.textContent = "Продолжить просмотр";
         introBtn.addEventListener("click", () => {
+          playSound("/static/audio/projector_on.mp3"); // ✅
           hideModal("intro-modal");
           startProfileTest(profile, idx, answers, loader);
         });
+
       } else {
         startProfileTest(profile, idx, answers, loader);
       }

@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 async def submit_answers(
     username: str = Form(...),
     answers: str = Form(...),
-    photo: UploadFile = File(None),   # зарезервировано
-    photos: List[UploadFile] = File(default=[]),  # зарезервировано
+    photo: UploadFile = File(None),              # зарезервировано
+    photos: List[UploadFile] = File(default=[]), # зарезервировано
 ):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-        # --- Парсим ответы ---
+        # 1️⃣ Парсим ответы
         parsed = json.loads(answers)
 
         if not isinstance(parsed, list):
@@ -36,38 +36,39 @@ async def submit_answers(
 
         logger.info(f"📩 ▶️ SUBMIT от {username}, {len(parsed)} ответов")
 
-        # --- Перевод ответов на русский ---
+        # 2️⃣ Приводим ответы к русскому виду
         for item in parsed:
-            raw_answer = str(item.get("answer", "")).strip().lower()
+            raw = str(item.get("answer", "")).strip().lower()
 
-            if raw_answer == "yes":
+            if raw == "yes":
                 item["answer"] = "Да"
-            elif raw_answer == "no" or raw_answer == "":
+            elif raw == "no" or raw == "":
                 item["answer"] = "Нет"
             else:
                 item["answer"] = item.get("answer", "").strip()
 
-        # --- 1️⃣ Сохраняем в SQLite ---
+        # 3️⃣ Сохраняем в SQLite (ВСЕГДА)
         save_answers_to_db(username, parsed, now)
 
-        # --- 2️⃣ Сохраняем в Google Sheets (ВЕРТИКАЛЬНО) ---
-        ws = get_sheet_first_tab()
-        if not ws:
-            raise RuntimeError("Google Sheets недоступен")
+        # 4️⃣ Пытаемся сохранить в Google Sheets (НЕ БЛОКИРУЕТ)
+        try:
+            ws = get_sheet_first_tab()
+            if ws:
+                for item in parsed:
+                    ws.append_row(
+                        [
+                            item["question"],  # Вопрос
+                            item["answer"],    # Ответ (Да / Нет / текст)
+                            username,          # Кто
+                            now,               # Когда
+                        ],
+                        value_input_option="USER_ENTERED",
+                    )
+                logger.info("✅ Ответы записаны в Google Sheets")
+        except Exception:
+            logger.warning("⚠️ Google Sheets недоступен, ответы сохранены только в БД")
 
-        for item in parsed:
-            ws.append_row(
-                [
-                    item["question"],  # Вопрос
-                    item["answer"],    # Ответ (Да / Нет / текст)
-                    username,
-                    now,
-                ],
-                value_input_option="USER_ENTERED",
-            )
-
-        logger.info("✅ Ответы успешно записаны в Google Sheets")
-
+        # 5️⃣ Отдаём ответ сразу (без ожидания Sheets)
         return {
             "status": "ok",
             "saved_count": len(parsed),
