@@ -99,12 +99,12 @@ function initSoundWarning() {
 
       flash.classList.add("active");
       flashSound.currentTime = 0;
-      flashSound.play().catch(() => {});
+      flashSound.play().catch(() => { });
       setTimeout(() => flash.classList.remove("active"), 1000);
 
       setTimeout(() => {
         ejectSound.currentTime = 0;
-        ejectSound.play().catch(() => {});
+        ejectSound.play().catch(() => { });
         box.classList.add("show");
       }, 800);
     });
@@ -142,6 +142,7 @@ function initSoundWarning() {
 let flashSound = null;
 let ejectSound = null;
 let bubbleSound = null;
+let openingSound = null;
 
 function preloadSounds() {
   flashSound = new Audio("/static/audio/flash.mp3");
@@ -174,7 +175,7 @@ function initThemeToggle() {
 
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
   mediaQuery.addEventListener("change", (e) => {
-    if (!localStorage.getItem("theme")) { 
+    if (!localStorage.getItem("theme")) {
       body.classList.toggle("dark", e.matches);
       renderProfiles();
     }
@@ -289,6 +290,10 @@ function saveToken(token) {
 
 // Запуск
 document.addEventListener("DOMContentLoaded", () => {
+  openingSound = new Audio("/static/audio/opening.mp3");
+  openingSound.preload = "auto";
+  openingSound.load();
+
   initThemeToggle();
   preloadSounds(); // ✅ Современная предзагрузка звуков
 
@@ -296,6 +301,18 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProfiles();
     initSoundWarning();
   });
+
+  document.addEventListener(
+  "click",
+  () => {
+    if (openingSound) {
+      openingSound.currentTime = 0;
+      openingSound.play().catch(() => {});
+    }
+  },
+  { once: true }
+);
+
 
   const savedToken = sessionStorage.getItem("token_validated");
   if (savedToken) {

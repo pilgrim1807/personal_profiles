@@ -181,9 +181,7 @@ function renderQuestion(profile, idx, answers) {
                     <button type="submit" class="profile-question__submit" disabled>Отправить</button>
                   `
       : `
-                    <button type="button" class="profile-question__prev"${idx === 0 ? " disabled" : ""}>Предыдущий</button>
-                    <button type="submit" class="profile-question__next" disabled>Следующий</button>
-                  `
+                    <button type="button" class="profile-question__next" disabled>Следующий</button> `
     }
             </div>
           </form>
@@ -289,47 +287,49 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
+
+
   // Сабмит формы
-form.addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  if (submitted) return;
-  submitted = true;
+  form.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (submitted) return;
+    submitted = true;
 
-  const val = form.answer.value;
-  if (val === "no" && !customInput.value.trim()) {
-    customInput.focus();
-    submitted = false;
-    return;
-  }
-
-  answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-  saveProgress(profile.name, idx, answers);
-
-  const sendSound = new Audio("/static/audio/send.mp3");
-  const sendingPromise = submitResults(profile, answers);
-
-  sendSound.onended = async () => {
-    const ok = await sendingPromise;
-    if (!ok) {
+    const val = form.answer.value;
+    if (val === "no" && !customInput.value.trim()) {
+      customInput.focus();
       submitted = false;
-      alert("Ошибка при отправке. Попробуй снова.");
       return;
     }
 
-    localStorage.removeItem(`progress_${profile.name}`);
-    localStorage.setItem("test_finished", "true");
-    window.location.href =
-      `/processing.html?name=${encodeURIComponent(profile.name)}`;
-  };
+    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
+    saveProgress(profile.name, idx, answers);
 
-  sendSound.play().catch(async () => {
-    const ok = await sendingPromise;
-    if (ok) {
+    const sendSound = new Audio("/static/audio/send.mp3");
+    const sendingPromise = submitResults(profile, answers);
+
+    sendSound.onended = async () => {
+      const ok = await sendingPromise;
+      if (!ok) {
+        submitted = false;
+        alert("Ошибка при отправке. Попробуй снова.");
+        return;
+      }
+
+      localStorage.removeItem(`progress_${profile.name}`);
+      localStorage.setItem("test_finished", "true");
       window.location.href =
         `/processing.html?name=${encodeURIComponent(profile.name)}`;
-    }
+    };
+
+    sendSound.play().catch(async () => {
+      const ok = await sendingPromise;
+      if (ok) {
+        window.location.href =
+          `/processing.html?name=${encodeURIComponent(profile.name)}`;
+      }
+    });
   });
-});
 
 
 

@@ -1,5 +1,6 @@
 // Глобальная переменная для переиспользуемого звука
 let bubbleSound = null;
+let endingSound = null;
 
 // Предзагрузка звука
 function preloadBubbleSound() {
@@ -8,9 +9,17 @@ function preloadBubbleSound() {
   bubbleSound.load();
 }
 
+function preloadEndingSound() {
+  endingSound = new Audio("/static/audio/ending.mp3");
+  endingSound.preload = "auto";
+  endingSound.load();
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Предзагружаем звук один раз
+  // Предзагружаем звук один раз
   preloadBubbleSound();
+  preloadEndingSound();
 
   // Проверка: завершён ли тест
   if (!localStorage.getItem("test_finished")) {
@@ -41,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (bubbleSound) {
       bubbleSound.currentTime = 0;
-      bubbleSound.play().catch(() => {});
+      bubbleSound.play().catch(() => { });
     }
 
     btn.classList.add("pop");
@@ -97,34 +106,43 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 /* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
 function showBubbleModal(onClose) {
+  let finished = false;
   const existingModal = document.getElementById("bubble-modal");
   if (existingModal) existingModal.remove();
 
   const bubbleMsg = createModalBubble();
 
-  bubbleMsg.addEventListener("click", () => {
-    if (bubbleSound) {
-      bubbleSound.currentTime = 0;
-      bubbleSound.play().catch(() => {});
-    }
+bubbleMsg.addEventListener("click", () => {
+  if (finished) return;   // ⛔ защита от повторного клика
+  finished = true;
 
-    bubbleMsg.classList.add("pop");
-    createSplashes(bubbleMsg);
+  const modal = document.getElementById("bubble-modal");
 
-    bubbleMsg.addEventListener(
-      "animationend",
-      () => {
-        const modal = document.getElementById("bubble-modal");
-        if (modal) modal.remove();
-        if (typeof onClose === "function") {
-          onClose();
-        } else {
-          window.location.href = "processing.html";
-        }
-      },
-      { once: true }
-    );
-  });
+  // 1. лопается пузырь
+if (bubbleSound) {
+  bubbleSound.currentTime = 0;
+  bubbleSound.play().catch(() => {});
+}
+
+
+  bubbleMsg.classList.add("pop");
+  createSplashes(bubbleMsg);
+
+  // 2. когда bubble закончился → запускаем ending
+bubbleSound.onended = () => {
+  if (endingSound) {
+    endingSound.currentTime = 0;
+    endingSound.play().catch(() => {});
+  }
+};
+
+  // 3. когда ending закончился → переход
+  endingSound.onended = () => {
+    if (modal) modal.remove();
+    window.location.href = "processing.html";
+  };
+});
+
 }
 
 /* ---------- СКАЧИВАНИЕ CSV ---------- */
