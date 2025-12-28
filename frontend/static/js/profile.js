@@ -53,6 +53,14 @@ function hideModal(id) {
   if (modal) modal.classList.add("hidden");
 }
 
+function triggerFlashWithSound() {
+  playSound("audio/projector_on.mp3");
+  const flash = document.createElement("div");
+  flash.classList.add("projector-flash");
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 1700);
+}
+
 // Прелоадинг картинок
 function preloadImages(urls, callback) {
   let loaded = 0;
@@ -181,7 +189,8 @@ function renderQuestion(profile, idx, answers) {
                     <button type="submit" class="profile-question__submit" disabled>Отправить</button>
                   `
       : `
-                    <button type="button" class="profile-question__next" disabled>Следующий</button> `
+                    <button type="button" class="profile-question__next" disabled>Следующий</button>
+                  `
     }
             </div>
           </form>
@@ -205,11 +214,12 @@ function showQuestion(profile, idx, answers) {
     if (bubblesContainer) spawnBubbles(bubblesContainer);
 
     if (idx === 0) {
-      const flash = document.createElement("div");
-      flash.classList.add("projector-flash");
-      document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 1700);
-    }
+  const flash = document.createElement("div");
+  flash.classList.add("projector-flash");
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 1700);
+}
+
   };
 
   if (old) fadeOut(old, inject);
@@ -287,8 +297,6 @@ function addQuestionListeners(profile, idx, answers) {
     });
   }
 
-
-
   // Сабмит формы
   form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
@@ -305,32 +313,38 @@ function addQuestionListeners(profile, idx, answers) {
     answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
     saveProgress(profile.name, idx, answers);
 
-    const sendSound = new Audio("/static/audio/send.mp3");
-    const sendingPromise = submitResults(profile, answers);
 
-    sendSound.onended = async () => {
-      const ok = await sendingPromise;
-      if (!ok) {
-        submitted = false;
-        alert("Ошибка при отправке. Попробуй снова.");
-        return;
-      }
+    if (idx < n - 1) {
+      playSound("audio/projector.mp3");
+      showQuestion(profile, idx + 1, answers);
+      submitted = false;
+    } else {
+      const sendSound = new Audio("audio/send.mp3");
+      sendSound.play().catch(() => { });
 
-      localStorage.removeItem(`progress_${profile.name}`);
-      localStorage.setItem("test_finished", "true");
-      window.location.href =
-        `/processing.html?name=${encodeURIComponent(profile.name)}`;
-    };
+      const sendingPromise = submitResults(profile, answers);
 
-    sendSound.play().catch(async () => {
-      const ok = await sendingPromise;
-      if (ok) {
-        window.location.href =
-          `/processing.html?name=${encodeURIComponent(profile.name)}`;
-      }
-    });
+      let transitioned = false;
+      const goToProcessing = async () => {
+        if (transitioned) return;
+        transitioned = true;
+        const ok = await sendingPromise;
+        if (ok) {
+          localStorage.removeItem(`progress_${profile.name}`);
+          localStorage.setItem("test_finished", "true");
+          window.location.href = `/processing.html?name=${encodeURIComponent(profile.name)}`;
+
+        } else {
+          submitted = false;
+          alert("Ошибка при отправке. Попробуй снова.");
+        }
+      };
+
+      sendSound.onended = goToProcessing;
+
+      setTimeout(goToProcessing, 1000);
+    }
   });
-
 
 
 }
@@ -551,10 +565,10 @@ window.onload = function () {
       if (flashBtn) {
         flashBtn.textContent = "Начать просмотр";
         flashBtn.addEventListener("click", () => {
-          playSound("/static/audio/projector_on.mp3");
-          hideModal("flash-sound-modal");
-          startProfileTest(profile, 0, answers, loader);
-        });
+  playSound("/static/audio/projector_on.mp3");
+  hideModal("flash-sound-modal");
+  startProfileTest(profile, 0, answers, loader);
+});
 
       } else {
         startProfileTest(profile, 0, answers, loader);
@@ -565,11 +579,9 @@ window.onload = function () {
       if (introBtn) {
         introBtn.textContent = "Продолжить просмотр";
         introBtn.addEventListener("click", () => {
-          playSound("/static/audio/projector_on.mp3"); // ✅
           hideModal("intro-modal");
           startProfileTest(profile, idx, answers, loader);
         });
-
       } else {
         startProfileTest(profile, idx, answers, loader);
       }
