@@ -919,67 +919,33 @@ body.dark .bubble-icon {
   text-shadow: 0 1px 4px rgba(197, 140, 255, 0.5);
 }
 
-/* START OVERLAY */
-.start-overlay {
+/* песчинки */
+.sand-particle {
   position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.start-overlay__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-}
-
-.start-overlay__content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  cursor: pointer;
-}
-
-.start-overlay__image {
-  max-width: 80vw;
-  max-height: 60vh;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.6);
-}
-
-.start-overlay__hint {
-  margin-top: 16px;
-  color: #fff;
-  opacity: 0.8;
-  font-size: 14px;
-}
-
-.start-overlay.fade-out {
-  opacity: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
   pointer-events: none;
-  transition: opacity .5s ease;
+  background: radial-gradient(
+    circle,
+    rgba(255, 245, 220, 0.9),
+    rgba(210, 180, 120, 0.6)
+  );
+  box-shadow: 0 0 6px rgba(255, 220, 160, 0.6);
+  animation: sand-evaporate 900ms ease-out forwards;
+  z-index: 5000;
 }
 
-.start-overlay__image {
-  animation: breathe 4.5s ease-in-out infinite;
-  transform-origin: center;
-  will-change: transform, opacity;
-}
-
-@keyframes breathe {
+@keyframes sand-evaporate {
   0% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  50% {
-    transform: scale(1.035);
     opacity: 1;
+    transform: translate(0, 0) scale(1);
   }
   100% {
-    transform: scale(1);
-    opacity: 0.9;
+    opacity: 0;
+    transform: translate(
+      calc(-40px + 80px * var(--x)),
+      calc(-100px - 60px * var(--y))
+    ) scale(0.3);
   }
 }

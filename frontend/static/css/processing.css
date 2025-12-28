@@ -822,3 +822,31 @@ text {
     font-size: 0.7rem;
   }
 }
+
+.sand-particle {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #f6e6b8, #cbb07a);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.8;
+  filter: blur(0.3px);
+  animation: sandEvaporate 1.6s ease-out forwards;
+}
+
+@keyframes sandEvaporate {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+    filter: blur(0px);
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(var(--scale));
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
