@@ -298,13 +298,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (overlay) {
     overlay.addEventListener("click", () => {
-      openingSound.currentTime = 0;
-      openingSound.play().then(() => {
-        fadeInAudio(openingSound, 2200);
-      }).catch(() => { });
+      // 🎵 1. запускаем музыку
 
+      openingSound.currentTime = 0;
+      openingSound.play()
+        .then(() => fadeInAudio(openingSound, 2000))
+        .catch(() => { });
+
+      // 🫧 2. песочное испарение
+      const rect = overlay.getBoundingClientRect();
+      createSandEvaporation(
+        rect.left + rect.width / 2,
+        rect.top + rect.height / 2
+      );
+
+      // 🖼️ 3. убираем картинку
       overlay.classList.add("fade-out");
       setTimeout(() => overlay.remove(), 500);
+
+      // 👤 4. показываем меню
+      const main = document.querySelector(".main-wrapper");
+      if (main) {
+        main.style.opacity = "1";
+        main.style.pointerEvents = "auto";
+      }
     });
   }
 
