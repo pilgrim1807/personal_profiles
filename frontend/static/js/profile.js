@@ -172,16 +172,25 @@ function renderQuestion(profile, idx, answers) {
               <input type="text" class="profile-question__custom" placeholder="Напишите свой вариант..." value="${(!['yes', 'no', null].includes(answers[idx]) ? answers[idx] : '')}">
             </div>
             <div class="profile-question__controls">
-              ${idx === n - 1
-      ? `
-                    <button type="button" class="profile-question__prev">Предыдущий</button>
-                    <button type="submit" class="profile-question__submit" disabled>Отправить</button>
-                  `
-      : `
-                    <button type="button" class="profile-question__next" disabled>Следующий</button>
-                  `
-    }
-            </div>
+
+  ${idx > 0 ? `
+    <button type="button" class="profile-question__prev">
+      Предыдущий
+    </button>
+  ` : ""}
+
+  ${idx === n - 1 ? `
+    <button type="submit" class="profile-question__submit" disabled>
+      Отправить
+    </button>
+  ` : `
+    <button type="button" class="profile-question__next" disabled>
+      Следующий
+    </button>
+  `}
+  
+</div>
+
           </form>
         </div>
       </div>
