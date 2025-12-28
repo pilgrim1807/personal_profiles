@@ -1,17 +1,6 @@
-const slug = getParam("slug");
-const name = getParam("name");
-
-let profile = null;
-
-if (slug) {
-  // поиск по slug
-  profile = findProfileBySlug(slug);
-} else if (name) {
-  // поиск по имени (строгий матчинг или регистронезависимый)
-  profile = Object.values(window.PROFILES).find(
-    p => p.name.toLowerCase() === name.toLowerCase()
-  );
-}
+const sendSound = new Audio("/static/audio/send.mp3");
+sendSound.preload = "auto";
+sendSound.load();
 
 function getParam(name) {
   const url = new URL(window.location.href);
@@ -58,7 +47,7 @@ function triggerFlashWithSound() {
   const flash = document.createElement("div");
   flash.classList.add("projector-flash");
   document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 1700);
+  setTimeout(() => flash.remove(), 700);
 }
 
 // Прелоадинг картинок
@@ -214,11 +203,11 @@ function showQuestion(profile, idx, answers) {
     if (bubblesContainer) spawnBubbles(bubblesContainer);
 
     if (idx === 0) {
-  const flash = document.createElement("div");
-  flash.classList.add("projector-flash");
-  document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 1700);
-}
+      const flash = document.createElement("div");
+      flash.classList.add("projector-flash");
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 700);
+    }
 
   };
 
@@ -228,126 +217,185 @@ function showQuestion(profile, idx, answers) {
 
 function addQuestionListeners(profile, idx, answers) {
   const form = document.querySelector(".profile-question__answers");
-  const radios = form.querySelectorAll('input[type="radio"]');
+  if (!form) return;
+
+  const radios = [...form.querySelectorAll('input[type="radio"][name="answer"]')];
   const customBlock = form.querySelector(".profile-question__custom-block");
   const customInput = form.querySelector(".profile-question__custom");
   const nextBtn = form.querySelector(".profile-question__next");
   const prevBtn = form.querySelector(".profile-question__prev");
   const submitBtn = form.querySelector(".profile-question__submit");
+
   const n = profile.questions.length;
+  let submitted = false;
 
-  let submitted = false; // защита от двойной отправки
+  const yesRadio = radios.find(r => r.value === "yes");
+  const noRadio = radios.find(r => r.value === "no");
 
-  const currentAnswer = answers[idx];
-  if (currentAnswer === "yes") {
-    customBlock.style.display = "none";
-    if (nextBtn) nextBtn.disabled = false;
-    if (submitBtn) submitBtn.disabled = false;
-  } else if (currentAnswer && !["yes", "no"].includes(currentAnswer)) {
-    customBlock.style.display = "";
-    if (nextBtn) nextBtn.disabled = false;
-    if (submitBtn) submitBtn.disabled = false;
-  } else if (currentAnswer === "no") {
-    customBlock.style.display = "";
+  function setButtonsEnabled(enabled) {
+    if (nextBtn) nextBtn.disabled = !enabled;
+    if (submitBtn) submitBtn.disabled = !enabled;
   }
 
-  // Выбор радио
+  function validateAndStoreAnswer() {
+    if (yesRadio?.checked) {
+      answers[idx] = "yes";
+      return true;
+    }
+
+    if (noRadio?.checked) {
+      const text = (customInput?.value || "").trim();
+      if (!text) return false;
+      answers[idx] = text;
+      return true;
+    }
+
+    return false;
+  }
+
+  function refreshUIFromCurrentAnswer() {
+    const current = answers[idx];
+
+    if (current === "yes") {
+      if (customBlock) customBlock.style.display = "none";
+      if (yesRadio) yesRadio.checked = true;
+      if (noRadio) noRadio.checked = false;
+      setButtonsEnabled(true);
+      return;
+    }
+
+    if (current && current !== "no" && current !== "yes") {
+      if (customBlock) customBlock.style.display = "";
+      if (noRadio) noRadio.checked = true;
+      if (yesRadio) yesRadio.checked = false;
+      if (customInput) customInput.value = current;
+      setButtonsEnabled(true);
+      return;
+    }
+
+    // нет ответа
+    if (customBlock) customBlock.style.display = "none";
+    if (customInput) customInput.value = "";
+    if (yesRadio) yesRadio.checked = false;
+    if (noRadio) noRadio.checked = false;
+    setButtonsEnabled(false);
+  }
+
+  function goNext() {
+    if (!validateAndStoreAnswer()) {
+      if (noRadio?.checked) customInput?.focus();
+      return;
+    }
+
+    saveProgress(profile.name, idx, answers);
+
+    if (idx < n - 1) {
+      playSound("/static/audio/projector.mp3");
+      showQuestion(profile, idx + 1, answers);
+      submitted = false;
+    }
+  }
+
+  async function doSubmit() {
+    if (submitted) return;
+    submitted = true;
+
+    if (!validateAndStoreAnswer()) {
+      submitted = false;
+      if (noRadio?.checked) customInput?.focus();
+      return;
+    }
+
+    saveProgress(profile.name, idx, answers);
+
+    sendSound.currentTime = 0;
+    const sendingPromise = submitResults(profile, answers);
+
+    const finish = async () => {
+      const ok = await sendingPromise;
+      if (!ok) {
+        submitted = false;
+        alert("Ошибка при отправке. Попробуй снова.");
+        return;
+      }
+
+      localStorage.removeItem(`progress_${profile.name}`);
+      localStorage.setItem("test_finished", "true");
+      window.location.href = `/processing.html?name=${encodeURIComponent(profile.name)}`;
+    };
+
+    sendSound.onended = finish;
+    sendSound.play().catch(finish);
+  }
+
+  // --- init state
+  refreshUIFromCurrentAnswer();
+
+  // --- radio change
   radios.forEach((radio) => {
     radio.addEventListener("change", () => {
       if (radio.value === "yes") {
         answers[idx] = "yes";
-        customBlock.style.display = "none";
-        if (nextBtn) nextBtn.disabled = false;
-        if (submitBtn) submitBtn.disabled = false;
+        if (customBlock) customBlock.style.display = "none";
+        if (customInput) customInput.value = "";
+        setButtonsEnabled(true);
       } else if (radio.value === "no") {
         answers[idx] = "";
-        customInput.value = "";
-        customBlock.style.display = "";
-        if (nextBtn) nextBtn.disabled = true;
-        if (submitBtn) submitBtn.disabled = true;
-        setTimeout(() => customInput.focus(), 100);
+        if (customBlock) customBlock.style.display = "";
+        setButtonsEnabled(false);
+        setTimeout(() => customInput?.focus(), 50);
       }
-      saveProgress(profile.name, idx, answers);
 
+      saveProgress(profile.name, idx, answers);
     });
   });
 
-  // Ввод кастомного ответа
-  customInput.addEventListener("input", () => {
-    if (radios[1].checked && customInput.value.trim().length > 0) {
-      answers[idx] = customInput.value.trim();
-      if (nextBtn) nextBtn.disabled = false;
-      if (submitBtn) submitBtn.disabled = false;
+  // --- custom input
+  customInput?.addEventListener("input", () => {
+    const text = customInput.value.trim();
+    if (noRadio?.checked && text.length > 0) {
+      answers[idx] = text;
+      setButtonsEnabled(true);
     } else {
       answers[idx] = "";
-      if (nextBtn) nextBtn.disabled = true;
-      if (submitBtn) submitBtn.disabled = true;
+      setButtonsEnabled(false);
     }
     saveProgress(profile.name, idx, answers);
-
   });
 
-  // Назад
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      playSound("audio/projector.mp3");
-      if (idx > 0) showQuestion(profile, idx - 1, answers);
-      saveProgress(profile.name, idx - 1, answers);
+  // --- prev
+  prevBtn?.addEventListener("click", () => {
+    playSound("/static/audio/projector.mp3");
+    if (idx > 0) showQuestion(profile, idx - 1, answers);
+    saveProgress(profile.name, Math.max(0, idx - 1), answers);
+  });
 
-    });
-  }
+  // --- next button (IMPORTANT)
+  nextBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    goNext();
+  });
 
-  // Сабмит формы
-  form.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    if (submitted) return;
-    submitted = true;
-
-    const val = form.answer.value;
-    if (val === "no" && !customInput.value.trim()) {
-      customInput.focus();
-      submitted = false;
+  // --- submit button / Enter key
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (idx < n - 1) {
+      // Enter на промежуточных вопросах = Next
+      goNext();
       return;
     }
-
-    answers[idx] = val === "yes" ? "yes" : customInput.value.trim();
-    saveProgress(profile.name, idx, answers);
-
-
-    if (idx < n - 1) {
-      playSound("audio/projector.mp3");
-      showQuestion(profile, idx + 1, answers);
-      submitted = false;
-    } else {
-      const sendSound = new Audio("audio/send.mp3");
-      sendSound.play().catch(() => { });
-
-      const sendingPromise = submitResults(profile, answers);
-
-      let transitioned = false;
-      const goToProcessing = async () => {
-        if (transitioned) return;
-        transitioned = true;
-        const ok = await sendingPromise;
-        if (ok) {
-          localStorage.removeItem(`progress_${profile.name}`);
-          localStorage.setItem("test_finished", "true");
-          window.location.href = `/processing.html?name=${encodeURIComponent(profile.name)}`;
-
-        } else {
-          submitted = false;
-          alert("Ошибка при отправке. Попробуй снова.");
-        }
-      };
-
-      sendSound.onended = goToProcessing;
-
-      setTimeout(goToProcessing, 1000);
-    }
+    await doSubmit();
   });
 
-
+  // Если хочешь: Enter в поле "Нет" тоже двигает дальше
+  customInput?.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    if (idx < n - 1) goNext();
+    else doSubmit();
+  });
 }
+
 
 // Заглушка для preparePhotoBlobs
 async function preparePhotoBlobs() {
@@ -479,7 +527,7 @@ function startProfileTest(profile, idx, answers, loader) {
   setTimeout(() => {
     showQuestion(profile, idx, answers);
     if (loader) loader.remove();
-  }, 1700);
+  }, 700);
 }
 
 
@@ -565,10 +613,10 @@ window.onload = function () {
       if (flashBtn) {
         flashBtn.textContent = "Начать просмотр";
         flashBtn.addEventListener("click", () => {
-  playSound("/static/audio/projector_on.mp3");
-  hideModal("flash-sound-modal");
-  startProfileTest(profile, 0, answers, loader);
-});
+          playSound("/static/audio/projector_on.mp3");
+          hideModal("flash-sound-modal");
+          startProfileTest(profile, 0, answers, loader);
+        });
 
       } else {
         startProfileTest(profile, 0, answers, loader);
