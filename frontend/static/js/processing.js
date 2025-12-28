@@ -1,25 +1,16 @@
 // Глобальная переменная для переиспользуемого звука
 let bubbleSound = null;
-let endingSound = null;
+let bgMusic = null;
 
-// Предзагрузка звука
 function preloadBubbleSound() {
   bubbleSound = new Audio("/static/audio/bubble.mp3");
   bubbleSound.preload = "auto";
-  bubbleSound.load();
+  bubbleSound.load(); // ← ВАЖНО
 }
-
-function preloadEndingSound() {
-  endingSound = new Audio("/static/audio/ending.mp3");
-  endingSound.preload = "auto";
-  endingSound.load();
-}
-
 
 document.addEventListener("DOMContentLoaded", () => {
   // Предзагружаем звук один раз
-  preloadBubbleSound();
-  preloadEndingSound();
+  preloadBubbleSound();  
 
   // Проверка: завершён ли тест
   if (!localStorage.getItem("test_finished")) {
@@ -39,8 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Показываем пузырь-модалку
   showBubbleModal();
-
-
 
   // Обработчик кнопки
   btn.addEventListener("click", () => {
@@ -105,8 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
 function showBubbleModal() {
   let finished = false;
-  const existingModal = document.getElementById("bubble-modal");
-  if (existingModal) existingModal.remove();
 
   const bubbleMsg = createModalBubble();
 
@@ -115,53 +102,37 @@ function showBubbleModal() {
     finished = true;
 
     bubbleMsg.style.pointerEvents = "none";
-
-    const modal = document.getElementById("bubble-modal");
-
     bubbleMsg.classList.add("pop");
     createSplashes(bubbleMsg);
 
-    playBubble();
-
-    function playBubble() {
-      if (!bubbleSound) return playEnding();
-
+    // 💥 звук пузыря
+    if (bubbleSound) {
       bubbleSound.currentTime = 0;
-      bubbleSound.play()
-        .then(() => {
-          bubbleSound.addEventListener("ended", playEnding, { once: true });
-        })
-        .catch(playEnding);
+      bubbleSound.play().catch(() => {});
     }
 
-    function playEnding() {
-      if (!endingSound) return goNext();
-
-      endingSound.currentTime = 0;
-      endingSound.play()
-        .then(() => {
-          endingSound.addEventListener("ended", goNext, { once: true });
-        })
-        .catch(goNext);
+    // 🎵 МУЗЫКА — СТРОГО ЗДЕСЬ
+    if (!bgMusic) {
+      bgMusic = new Audio("/static/audio/ending.mp3");
+      bgMusic.loop = true;
+      bgMusic.volume = 0.8;
     }
 
+    bgMusic.currentTime = 0;
+    bgMusic.play()
+      .then(() => console.log("Музыка запущена"))
+      .catch(err => console.log("Браузер заблокировал звук", err));
 
-    function goNext() {
-      if (modal) {
-        modal.classList.add("fade-out");
-        setTimeout(() => {
-          modal.remove();
+    const modal = document.getElementById("bubble-modal");
 
-          const main = document.querySelector("main");
-          if (main) main.style.opacity = "1";
-
-        }, 300);
-      }
-    }
-
+    setTimeout(() => {
+      if (modal) modal.remove();
+      const main = document.querySelector("main");
+      if (main) main.style.opacity = "1";
+    }, 300);
   });
-
 }
+
 
 /* ---------- СКАЧИВАНИЕ CSV ---------- */
 function downloadCSV() {
@@ -392,5 +363,4 @@ function createModalBubble() {
 
   return msg;
 }
-
 

@@ -918,3 +918,68 @@ body.dark .bubble-icon {
   color: #d5bbff;
   text-shadow: 0 1px 4px rgba(197, 140, 255, 0.5);
 }
+
+/* START OVERLAY */
+.start-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.start-overlay__content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  cursor: pointer;
+}
+
+.start-overlay__image {
+  max-width: 80vw;
+  max-height: 60vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+}
+
+.start-overlay__hint {
+  margin-top: 16px;
+  color: #fff;
+  opacity: 0.8;
+  font-size: 14px;
+}
+
+.start-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .5s ease;
+}
+
+.start-overlay__image {
+  animation: breathe 4.5s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes breathe {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.035);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}

@@ -29,6 +29,8 @@
   <meta name="msapplication-TileColor" content="#2563eb">
   <meta name="theme-color" content="#2563eb">
 
+  <link rel="preload" as="image" href="/static/assets/favicons/social-preview.jpg">
+
   <!-- PWA -->
   <link rel="manifest" href="/static/assets/manifest-index.json">
   <meta name="mobile-web-app-capable" content="yes">
@@ -109,6 +111,17 @@
       <button id="sound-continue">Продолжить</button>
     </div>
   </div>
+
+  <!-- START OVERLAY -->
+  <div id="start-overlay" class="start-overlay">
+    <div class="start-overlay__backdrop"></div>
+
+    <div class="start-overlay__content">
+      <img src="/static/assets/favicons/social-preview.jpg" alt="Нажмите, чтобы начать" class="start-overlay__image" />
+      <p class="start-overlay__hint">Нажмите, чтобы начать</p>
+    </div>
+  </div>
+
 
 </body>
 
