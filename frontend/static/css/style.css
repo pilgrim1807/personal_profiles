@@ -1147,3 +1147,68 @@ body.dark .bubble-icon {
     filter: blur(2px);
   }
 }
+
+/* СТАРТОВЫЙ ЭКРАН */
+#start-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+
+  cursor: pointer;
+}
+
+/* плавное исчезновение */
+#start-overlay.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+/* картинка в центре */
+.start-overlay__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.start-overlay__image {
+  max-width: min(90vw, 420px);
+  height: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+}
+
+/* Блокировка страницы до старта */
+body.start-locked {
+  overflow: hidden;
+}
+
+/* скрываем основной контент */
+body.start-locked .main-wrapper {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* скрываем футер */
+body.start-locked .footer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* стартовый экран поверх всего */
+#start-overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.main-wrapper {
+  transition: opacity 0.8s ease;
+}

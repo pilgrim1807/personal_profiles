@@ -298,6 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (overlay) {
     overlay.addEventListener("click", () => {
+      document.body.classList.remove("start-locked");
+
       // 🎵 1. запускаем музыку
 
       openingSound.currentTime = 0;
