@@ -1215,3 +1215,34 @@ body.start-locked .footer {
   position: relative;
   z-index: 1;
 }
+
+.sand-particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, #f5e1a4, #bfa36b);
+  opacity: 0.9;
+  filter: blur(0.2px);
+  animation: sandDissolve 1.8s ease-out forwards;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+
+}
+
+@keyframes sandDissolve {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  60% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform:
+      translate(var(--dx), calc(var(--dy) + 140px))
+      scale(var(--scale));
+    opacity: 0;
+    filter: blur(2px);
+  }
+}

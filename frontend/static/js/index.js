@@ -142,7 +142,7 @@ function initSoundWarning() {
 let flashSound = null;
 let ejectSound = null;
 let bubbleSound = null;
-let openingSound = null;
+// openingSound создаётся ТОЛЬКО по клику
 
 function preloadSounds() {
   flashSound = new Audio("/static/audio/flash.mp3");
@@ -290,35 +290,30 @@ function saveToken(token) {
 
 // Запуск
 document.addEventListener("DOMContentLoaded", () => {
-  openingSound = new Audio("/static/audio/opening.mp3");
-  openingSound.preload = "auto";
-  openingSound.volume = 0.8;
 
   const overlay = document.getElementById("start-overlay");
 
   if (overlay) {
     overlay.addEventListener("click", () => {
+  if (overlay.classList.contains("fade-out")) return;
       document.body.classList.remove("start-locked");
 
-      // 🎵 1. запускаем музыку
+      openingSound = new Audio("/static/audio/opening.mp3");
+      openingSound.volume = 0;
+      openingSound.loop = true;
 
-      openingSound.currentTime = 0;
-      openingSound.play()
-        .then(() => fadeInAudio(openingSound, 2000))
-        .catch(() => { });
+      openingSound.play().catch(err => {
+        console.warn("Музыка заблокирована:", err);
+      });
 
-      // 🫧 2. песочное испарение
-      const rect = overlay.getBoundingClientRect();
-      createSandEvaporation(
-        rect.left + rect.width / 2,
-        rect.top + rect.height / 2
-      );
+      fadeInAudio(openingSound, 2500);
 
-      // 🖼️ 3. убираем картинку
+      const img = overlay.querySelector(".start-overlay__image");
+      if (img) dissolveImageToSand(img);
+
       overlay.classList.add("fade-out");
-      setTimeout(() => overlay.remove(), 500);
+      setTimeout(() => overlay.remove(), 700);
 
-      // 👤 4. показываем меню
       const main = document.querySelector(".main-wrapper");
       if (main) {
         main.style.opacity = "1";
@@ -328,19 +323,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initThemeToggle();
-  preloadSounds(); // ✅ Современная предзагрузка звуков
-
+  preloadSounds();
   renderProfiles();
-  initSoundWarning();
+  requestAnimationFrame(initSoundWarning);
+
+
   requestIdleCallback
     ? requestIdleCallback(() => preloadAllImages())
     : setTimeout(() => preloadAllImages(), 200);
 
-
-  const savedToken = sessionStorage.getItem("token_validated");
-  if (savedToken) {
-    downloadCSV(savedToken);
-  }
 
   const btn = document.getElementById("bubble-btn");
   const wrapper = document.getElementById("token-wrapper");
@@ -429,4 +420,37 @@ function fadeInAudio(audio, duration = 2000) {
     audio.volume = Math.min(0.8, step / steps * 0.8);
     if (step >= steps) clearInterval(interval);
   }, stepTime);
+}
+
+function dissolveImageToSand(img) {
+  const rect = img.getBoundingClientRect();
+  const particles = 160;
+
+  for (let i = 0; i < particles; i++) {
+    const p = document.createElement("div");
+    p.className = "sand-particle";
+
+    const size = Math.random() * 3 + 1;
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+    const x = rect.left + Math.random() * rect.width;
+    const y = rect.top + Math.random() * rect.height;
+
+    p.style.left = `${x}px`;
+    p.style.top = `${y}px`;
+
+    const dx = (Math.random() - 0.5) * 260;
+    const dy = Math.random() * -220;
+
+    p.style.setProperty("--dx", `${dx}px`);
+    p.style.setProperty("--dy", `${dy}px`);
+    p.style.setProperty("--scale", Math.random() * 0.6 + 0.2);
+
+    document.body.appendChild(p);
+    p.addEventListener("animationend", () => p.remove());
+  }
+
+  img.style.opacity = "0";
 }
