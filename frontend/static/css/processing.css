@@ -178,7 +178,34 @@ main {
   z-index: 3000;
   padding: 5vw;
   box-sizing: border-box;
+  pointer-events: auto;
 }
+
+.bubble-modal.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.processing-overlay {
+  pointer-events: none;
+}
+
+.processing-content,
+.processing-content * {
+  pointer-events: auto;
+}
+
+.main,
+.main * {
+  pointer-events: auto;
+}
+
+.home-link {
+  position: relative;
+  z-index: 10;
+}
+
 
 /* Стеклянный эффект у пузыря */
 .bubble-message {
@@ -409,8 +436,8 @@ text {
   background: radial-gradient(circle at 30% 30%, hsla(200, 90%, 85%, 0.8), hsla(200, 90%, 50%, 0.2) 70%),
     radial-gradient(circle at 70% 70%, hsla(260, 80%, 75%, 0.3), transparent 80%);
   box-shadow: inset -6px -10px 20px rgba(255, 255, 255, 0.4),
-              inset 8px 10px 18px rgba(0, 0, 0, 0.15),
-              0 0 25px rgba(170, 130, 255, 0.5);
+    inset 8px 10px 18px rgba(0, 0, 0, 0.15),
+    0 0 25px rgba(170, 130, 255, 0.5);
   opacity: 1;
   transform: scale(1);
   animation: wobbleBubble 6s ease-in-out infinite, shimmer 12s linear infinite;
@@ -418,8 +445,13 @@ text {
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.bubble-download.pop::before { animation: popAnim 0.5s ease forwards; }
-.bubble-download.icon-only::before { display: none; }
+.bubble-download.pop::before {
+  animation: popAnim 0.5s ease forwards;
+}
+
+.bubble-download.icon-only::before {
+  display: none;
+}
 
 .bubble-icon {
   font-size: 2rem;
@@ -430,28 +462,69 @@ text {
 
 /* Вибрация пузыря */
 @keyframes wobbleBubble {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.05) translate(-3px, -2px); }
-  50% { transform: scale(0.95) translate(2px, 3px); }
-  75% { transform: scale(1.08) translate(2px, -3px); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  25% {
+    transform: scale(1.05) translate(-3px, -2px);
+  }
+
+  50% {
+    transform: scale(0.95) translate(2px, 3px);
+  }
+
+  75% {
+    transform: scale(1.08) translate(2px, -3px);
+  }
 }
 
 @keyframes shimmer {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
+  0% {
+    filter: hue-rotate(0deg);
+  }
+
+  100% {
+    filter: hue-rotate(360deg);
+  }
 }
 
 @keyframes popAnim {
-  0% { transform: scale(1); opacity: 1; filter: blur(0); }
-  50% { transform: scale(1.2); opacity: 0.7; filter: blur(2px); }
-  100% { transform: scale(0.3); opacity: 0; filter: blur(6px); }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+    filter: blur(2px);
+  }
+
+  100% {
+    transform: scale(0.3);
+    opacity: 0;
+    filter: blur(6px);
+  }
 }
 
-.bubble-download.grow::before { animation: growBubble 0.5s ease forwards; }
+.bubble-download.grow::before {
+  animation: growBubble 0.5s ease forwards;
+}
 
 @keyframes growBubble {
-  0% { transform: scale(0); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Брызги */
@@ -466,8 +539,15 @@ text {
 }
 
 @keyframes splashAnim {
-  from { transform: translate(0, 0) scale(1); opacity: 1; }
-  to { transform: translate(var(--dx), var(--dy)) scale(0.6); opacity: 0; }
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.6);
+    opacity: 0;
+  }
 }
 
 /* Контейнер для выравнивания */
@@ -508,7 +588,7 @@ text {
   -webkit-backdrop-filter: blur(10px) saturate(160%);
 
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   transition: all 0.3s ease;
   opacity: 1;
   z-index: 1;
@@ -550,7 +630,7 @@ text {
   text-align: center;
   backdrop-filter: blur(6px) saturate(140%);
   -webkit-backdrop-filter: blur(6px) saturate(140%);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 2;
@@ -574,38 +654,97 @@ text {
 }
 
 @keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /*  Адаптация */
 
 @media (max-width: 600px) {
-  .bubble-download { width: 64px; height: 64px; }
-  .bubble-icon { font-size: 1.8rem; }
-  #token-wrapper { width: clamp(160px, 70vw, 280px); }
-  #token-input { font-size: 0.95rem; padding: 10px 14px; }
+  .bubble-download {
+    width: 64px;
+    height: 64px;
+  }
+
+  .bubble-icon {
+    font-size: 1.8rem;
+  }
+
+  #token-wrapper {
+    width: clamp(160px, 70vw, 280px);
+  }
+
+  #token-input {
+    font-size: 0.95rem;
+    padding: 10px 14px;
+  }
 }
 
 @media (max-width: 400px) {
-  .bubble-download { width: 56px; height: 56px; }
-  .bubble-icon { font-size: 1.6rem; }
-  #token-wrapper { width: clamp(140px, 75vw, 240px); }
-  #token-input { font-size: 0.9rem; padding: 8px 12px; }
+  .bubble-download {
+    width: 56px;
+    height: 56px;
+  }
+
+  .bubble-icon {
+    font-size: 1.6rem;
+  }
+
+  #token-wrapper {
+    width: clamp(140px, 75vw, 240px);
+  }
+
+  #token-input {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
 }
 
 @media (max-width: 300px) {
-  .bubble-download { width: 50px; height: 50px; }
-  .bubble-icon { font-size: 1.4rem; }
-  #token-wrapper { width: clamp(120px, 80vw, 200px); }
-  #token-input { font-size: 0.85rem; padding: 6px 10px; }
+  .bubble-download {
+    width: 50px;
+    height: 50px;
+  }
+
+  .bubble-icon {
+    font-size: 1.4rem;
+  }
+
+  #token-wrapper {
+    width: clamp(120px, 80vw, 200px);
+  }
+
+  #token-input {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+  }
 }
 
 @media (max-width: 200px) {
-  .bubble-download { width: 42px; height: 42px; }
-  .bubble-icon { font-size: 1.2rem; }
-  #token-wrapper { width: clamp(100px, 85vw, 160px); }
-  #token-input { font-size: 0.75rem; padding: 5px 8px; }
+  .bubble-download {
+    width: 42px;
+    height: 42px;
+  }
+
+  .bubble-icon {
+    font-size: 1.2rem;
+  }
+
+  #token-wrapper {
+    width: clamp(100px, 85vw, 160px);
+  }
+
+  #token-input {
+    font-size: 0.75rem;
+    padding: 5px 8px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -614,6 +753,7 @@ text {
     height: 56px;
     font-size: 1.3rem;
   }
+
   #token-input {
     font-size: 0.9rem;
     padding: 8px 12px;
@@ -626,9 +766,11 @@ text {
     height: 48px;
     font-size: 1.1rem;
   }
+
   #token-wrapper {
     width: 160px;
   }
+
   #token-input {
     font-size: 0.8rem;
     padding: 6px 10px;

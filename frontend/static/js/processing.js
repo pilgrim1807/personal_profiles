@@ -38,11 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
   btn.style.display = "none";
 
   // Показываем пузырь-модалку
-  showBubbleModal(() => {
-    btn.style.display = "inline-block";
-    btn.classList.remove("icon-only");
-    btn.classList.add("bubble-download", "visible");
-  });
+  showBubbleModal();
+
+
 
   // Обработчик кнопки
   btn.addEventListener("click", () => {
@@ -105,43 +103,63 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 /* ---------- МОДАЛЬНОЕ ОКНО - ПУЗЫРЬ ---------- */
-function showBubbleModal(onClose) {
+function showBubbleModal() {
   let finished = false;
   const existingModal = document.getElementById("bubble-modal");
   if (existingModal) existingModal.remove();
 
   const bubbleMsg = createModalBubble();
 
-bubbleMsg.addEventListener("click", () => {
-  if (finished) return;   // ⛔ защита от повторного клика
-  finished = true;
+  bubbleMsg.addEventListener("click", () => {
+    if (finished) return;
+    finished = true;
 
-  const modal = document.getElementById("bubble-modal");
+    bubbleMsg.style.pointerEvents = "none";
 
-  // 1. лопается пузырь
-if (bubbleSound) {
-  bubbleSound.currentTime = 0;
-  bubbleSound.play().catch(() => {});
-}
+    const modal = document.getElementById("bubble-modal");
+
+    bubbleMsg.classList.add("pop");
+    createSplashes(bubbleMsg);
+
+    playBubble();
+
+    function playBubble() {
+      if (!bubbleSound) return playEnding();
+
+      bubbleSound.currentTime = 0;
+      bubbleSound.play()
+        .then(() => {
+          bubbleSound.addEventListener("ended", playEnding, { once: true });
+        })
+        .catch(playEnding);
+    }
+
+    function playEnding() {
+      if (!endingSound) return goNext();
+
+      endingSound.currentTime = 0;
+      endingSound.play()
+        .then(() => {
+          endingSound.addEventListener("ended", goNext, { once: true });
+        })
+        .catch(goNext);
+    }
 
 
-  bubbleMsg.classList.add("pop");
-  createSplashes(bubbleMsg);
+    function goNext() {
+      if (modal) {
+        modal.classList.add("fade-out");
+        setTimeout(() => {
+          modal.remove();
 
-  // 2. когда bubble закончился → запускаем ending
-bubbleSound.onended = () => {
-  if (endingSound) {
-    endingSound.currentTime = 0;
-    endingSound.play().catch(() => {});
-  }
-};
+          const main = document.querySelector("main");
+          if (main) main.style.opacity = "1";
 
-  // 3. когда ending закончился → переход
-  endingSound.onended = () => {
-    if (modal) modal.remove();
-    window.location.href = "processing.html";
-  };
-});
+        }, 300);
+      }
+    }
+
+  });
 
 }
 

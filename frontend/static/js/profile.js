@@ -47,7 +47,7 @@ function triggerFlashWithSound() {
   const flash = document.createElement("div");
   flash.classList.add("projector-flash");
   document.body.appendChild(flash);
-  setTimeout(() => flash.remove(), 700);
+  setTimeout(() => flash.remove(), 300);
 }
 
 // Прелоадинг картинок
@@ -215,7 +215,7 @@ function showQuestion(profile, idx, answers) {
       const flash = document.createElement("div");
       flash.classList.add("projector-flash");
       document.body.appendChild(flash);
-      setTimeout(() => flash.remove(), 700);
+      setTimeout(() => flash.remove(), 300);
     }
 
   };
@@ -536,7 +536,7 @@ function startProfileTest(profile, idx, answers, loader) {
   setTimeout(() => {
     showQuestion(profile, idx, answers);
     if (loader) loader.remove();
-  }, 700);
+  }, 300);
 }
 
 

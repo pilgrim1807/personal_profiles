@@ -297,10 +297,10 @@ document.addEventListener("DOMContentLoaded", () => {
   initThemeToggle();
   preloadSounds(); // ✅ Современная предзагрузка звуков
 
-  preloadAllImages().then(() => {
-    renderProfiles();
-    initSoundWarning();
-  });
+renderProfiles();
+initSoundWarning();
+preloadAllImages();
+
 
   document.addEventListener(
   "click",
@@ -370,22 +370,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
   }
-
-let soundUnlocked = false;
-
-document.addEventListener("click", () => {
-  if (soundUnlocked) return;
-
-  const a = new Audio("/static/audio/opening.mp3");
-  a.volume = 0;              // 🔇 не слышно
-  a.play().then(() => {
-    a.pause();
-    a.currentTime = 0;
-    soundUnlocked = true;
-    console.log("🔊 Звук разблокирован");
-  }).catch(() => {});
-}, { once: true });
-
-
   
 });
